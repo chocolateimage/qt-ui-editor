@@ -1,0 +1,77 @@
+/* Fusion Style */
+
+:root {
+    --qt-window: #EFEFEF;
+    --qt-window-text: #000000;
+    --qt-button-background: linear-gradient(#FEFEFE, #EEEEEE);
+    --qt-button-border: #ABABAB;
+    --qt-button-text: #000000;
+    --qt-border: #9F9F9F;
+    --qt-base: #FFFFFF;
+
+    --qt-primary-outline: #22648D;
+    --qt-primary-border: #60b8f0;
+    --qt-primary-background: linear-gradient(#39A5EA, #318FCA);
+}
+
+.QWidget {
+    position: absolute;
+}
+
+.main {
+    user-select: none;
+    cursor: default;
+}
+
+.QWidget {
+    border: 1px dotted var(--qt-border);
+    overflow: hidden;
+}
+
+.main > .QWidget {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAAAAACoWZBhAAAAFklEQVQI12OcH8AABYzvYSwGJgbaMAHFSAHxfa1OEgAAAABJRU5ErkJggg==');
+    border: none;
+    color: var(--qt-window-text);
+    font-size: 10pt;
+}
+
+.QPushButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: var(--qt-button-background);
+    border: 1px solid var(--qt-button-border);
+    border-radius: 2px;
+    color: var(--qt-button-text);
+}
+
+.QProgressBar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: var(--qt-base);
+    border: 1px solid var(--qt-border);
+    border-radius: 3px;
+
+    overflow: visible;
+}
+
+.QProgressBar > div {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+
+    outline: 1px solid var(--qt-primary-outline);
+    border: 1px solid var(--qt-primary-border);
+    background: var(--qt-primary-background);
+    border-radius: 2px;
+
+    z-index: 1;
+}
+.QProgressBar > span {
+    position: absolute;
+    z-index: 2;
+}

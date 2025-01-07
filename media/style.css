@@ -1,0 +1,183 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.root {
+    display: flex;
+    flex-direction: row;
+
+    width: 100%;
+    height: 100%;
+}
+
+.main {
+    flex-grow: 1;
+    margin-top: 8px;
+    margin-left: 16px;
+
+    position: relative;
+}
+
+.sidebar {
+    background-color: var(--vscode-sideBar-background);
+    color: var(--vscode-sideBar-foreground);
+    border-left: 1px solid var(--vscode-sideBar-border);
+    width: 350px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.view {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+}
+
+.view:has(.view-content-hidden) {
+    height: auto;
+}
+
+.view-title {
+    padding: 6px 12px !important;
+    font-weight: bold;
+    background: var(--vscode-sideBarSectionHeader-background) !important;
+    color: var(--vscode-sideBarSectionHeader-foreground) !important;
+    border-bottom: 1px solid var(--vscode-sideBarSectionHeader-border) !important;
+    outline: none !important;
+    user-select: none;
+    text-transform: uppercase;
+    font-size: 11px !important;
+    text-align: left;
+}
+
+.view-content {
+    height: 100%;
+}
+
+.view-content-hidden {
+    display: none;
+}
+
+.dragging {
+    z-index: 100 !important;
+    opacity: 0.8;
+}
+
+.drag-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+}
+
+.drag-overlay.active {
+    cursor: grabbing;
+}
+
+.selection {
+    position: fixed;
+}
+
+.selection-dot {
+    width: 6px;
+    height: 6px;
+    background: blue;
+    z-index: 500;
+
+    position: fixed;
+    transform: translate(-50%, -50%);
+}
+
+.selection-dot-Top {
+    cursor: ns-resize;
+}
+.selection-dot-Right {
+    cursor: ew-resize;
+}
+.selection-dot-Bottom {
+    cursor: ns-resize;
+}
+.selection-dot-Left {
+    cursor: ew-resize;
+}
+.selection-dot-TopRight {
+    cursor: nesw-resize;
+}
+.selection-dot-TopLeft {
+    cursor: nwse-resize;
+}
+.selection-dot-BottomRight {
+    cursor: nwse-resize;
+}
+.selection-dot-BottomLeft {
+    cursor: nesw-resize;
+}
+
+#objectInspectorRoot, #objectInspectorRoot ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+.inspector-element-label {
+    width: 100%;
+    cursor: pointer;
+
+    padding: 4px 12px;
+
+    user-select: none;
+}
+.inspector-element-label:hover:not(.inspector-element-label-selected) {
+    background: var(--vscode-list-hoverBackground);
+    color: var(--vscode-list-hoverForeground);
+}
+.inspector-element-label-selected {
+    background: var(--vscode-list-activeSelectionBackground);
+    color: var(--vscode-list-activeSelectionForeground);
+}
+
+#propertyEditorTable {
+    table-layout: fixed;
+    width: 100%;
+    border-spacing: 0;
+}
+
+#propertyEditorTable thead {
+    background: var(--vscode-keybindingTable-headerBackground);
+}
+
+#propertyEditorTable th {
+    padding: 6px 12px;
+    text-align: left;
+    user-select: none;
+    width: 100%;
+}
+
+.property-editor-property {
+    width: 100%;
+}
+.property-editor-property-name {
+    padding: 4px 12px;
+    text-align: left;
+    user-select: none;
+}
+.property-editor-property:nth-child(even) {
+    background: var(--vscode-keybindingTable-rowsBackground);
+}
+.property-editor-separator {
+    background: var(--vscode-list-hoverBackground);
+    color: var(--vscode-list-hoverForeground);
+    font-weight: 500;
+}
+.property-editor-separator-label {
+    text-align: left;
+    user-select: none;
+    padding: 6px 12px;
+}
