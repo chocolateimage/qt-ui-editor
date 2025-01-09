@@ -80,6 +80,9 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
             <title>UI Editor</title>
         </head>
         <body>
+            <div class="warning" id="warningWidgetLoadError">
+                <span class="warning-text">The following widgets could not be loaded: <span id="warningWidgetLoadErrorWidgets"></span></span>
+            </div>
             <div class="root">
                 <div class="main">
                 </div>

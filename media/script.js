@@ -4,6 +4,7 @@
 	let currentSelection = null;
 	let rootWidget = null;
 	let lastXMLSerialized = null;
+	let widgetLoadErrors = [];
 
 	function setCurrentSelection(newSelection) {
 		if (newSelection === currentSelection) {
@@ -952,6 +953,9 @@
 		if (widgetClass === undefined) {
 			widgetClass = QWidget;
 			console.log("Unknown Qt widget class " + className);
+			if (!widgetLoadErrors.includes(className)) {
+				widgetLoadErrors.push(className);
+			}
 		}
 		const widget = new widgetClass();
 		widget.name = raw.getAttribute("name");
@@ -963,6 +967,13 @@
 				const childWidget = addWidgetFromElement(child);
 				widget.addChild(childWidget);
 			}
+		}
+
+		if (widgetLoadErrors.length == 0) {
+			document.getElementById("warningWidgetLoadError").classList.remove("show");
+		} else {
+			document.getElementById("warningWidgetLoadError").classList.add("show");
+			document.getElementById("warningWidgetLoadErrorWidgets").textContent = widgetLoadErrors.join(", ");
 		}
 		return widget;
 	}
@@ -976,6 +987,8 @@
 		if (lastXMLSerialized === str) {
 			return;
 		}
+
+		widgetLoadErrors.length = 0;
 
 		setCurrentSelection(null);
 		const root = doc.getElementsByTagName("ui")[0];
