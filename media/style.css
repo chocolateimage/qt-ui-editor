@@ -58,6 +58,7 @@ html, body {
 
 .view-content {
     height: 100%;
+    overflow-y: auto;
 }
 
 .view-content-hidden {

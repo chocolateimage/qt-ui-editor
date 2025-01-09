@@ -18,6 +18,20 @@
 		}
 	}
 
+	const enumAlignmentHorizontal = [
+		{constant: "Qt::AlignLeft", label: "Left"},
+		{constant: "Qt::AlignHCenter", label: "Center"},
+		{constant: "Qt::AlignRight", label: "Right"},
+		{constant: "Qt::AlignJustify", label: "Justify"},
+	];
+
+	const enumAlignmentVertical = [
+		{constant: "Qt::AlignTop", label: "Top"},
+		{constant: "Qt::AlignVCenter", label: "Center"},
+		{constant: "Qt::AlignBottom", label: "Bottom"},
+		{constant: "Qt::AlignBaseline", label: "Baseline"},
+	];
+
 	class QWidget {
 		constructor() {
 			this.element = document.createElement("div");
@@ -355,6 +369,15 @@
 					});
 					propValueElement.appendChild(select);
 					propertyEditorProperty.input = select;
+				} else if (defaultProp.type == "bool") {
+					const input = document.createElement("input");
+					input.type = "checkbox";
+					input.addEventListener("change", () => {
+						this.setProperty(defaultProp.name, input.checked);
+						save();
+					});
+					propValueElement.appendChild(input);
+					propertyEditorProperty.input = input;
 				}
 				this._propertyEditorProperties[defaultProp.name] = propertyEditorProperty;
 				this.invalidateProperty(defaultProp.name);
@@ -373,7 +396,11 @@
 			if (propertyEditorItem == null) {
 				return;
 			}
-			propertyEditorItem.input.value = this.getProperty(name);
+			if (propertyEditorItem.type == "bool") {
+				propertyEditorItem.input.checked = this.getProperty(name);
+			} else {
+				propertyEditorItem.input.value = this.getProperty(name);
+			}
 
 		}
 
@@ -458,6 +485,10 @@
 					width: parseInt(valueRaw.getElementsByTagName("width")[0].textContent),
 					height: parseInt(valueRaw.getElementsByTagName("height")[0].textContent),
 				};
+			} else if (valueRaw.tagName == "bool") {
+				value = valueRaw.textContent === "true";
+			} else if (valueRaw.tagName == "number") {
+				value = parseInt(valueRaw.textContent);
 			} else {
 				value = valueRaw.textContent;
 			}
@@ -801,12 +832,115 @@
 		}
 	}
 
+	class QLabel extends QFrame {
+		constructor() {
+			super();
+			this.element.classList.add("QLabel");
+
+			this.text = "";
+			this.wordWrap = false;
+			this.alignmentHorizontal = "Qt::AlignLeft";
+			this.alignmentVertical = "Qt::AlignVCenter";
+
+			this.updateLabelDisplay();
+		}
+
+		getDefaultProps() {
+			return [
+				...super.getDefaultProps(),
+				{ separator: "QLabel" },
+				{ name: "text", type: "string", default: "", label: "Text" },
+				{ name: "wordWrap", type: "bool", default: false, label: "Word Wrap" },
+				{ name: "alignmentHorizontal", type: "enum", default: "Qt::AlignLeft", label: "Alignment Horizontal", options: enumAlignmentHorizontal },
+				{ name: "alignmentVertical", type: "enum", default: "Qt::AlignVCenter", label: "Alignment Vertical", options: enumAlignmentVertical },
+			];
+		}
+
+		updateLabelDisplay() {
+			this.element.textContent = this.text;
+
+			this.element.style.whiteSpace = this.wordWrap ? "pre-wrap" : "pre";
+
+			if (this.alignmentHorizontal == "Qt::AlignLeft" || this.alignmentHorizontal == "Qt::AlignJustify") {
+				this.element.style.justifyContent = "left";
+				this.element.style.textAlign = "left";
+			} else if (this.alignmentHorizontal == "Qt::AlignHCenter") {
+				this.element.style.justifyContent = "center";
+				this.element.style.textAlign = "center";
+			} else if (this.alignmentHorizontal == "Qt::AlignRight") {
+				this.element.style.justifyContent = "right";
+				this.element.style.textAlign = "right";
+			}
+			if (this.alignmentVertical == "Qt::AlignTop") {
+				this.element.style.alignItems = "start";
+			} else if (this.alignmentVertical == "Qt::AlignVCenter" || this.alignmentVertical == "Qt::AlignBaseline") {
+				this.element.style.alignItems = "center";
+			} else if (this.alignmentVertical == "Qt::AlignBottom") {
+				this.element.style.alignItems = "end";
+			}
+		}
+
+		setProp_text(value) {
+			this.text = value;
+			this.updateLabelDisplay();
+		}
+		setProp_alignment(value) {
+			for (const item of value.split("|")) {
+				if (enumAlignmentHorizontal.find((x) => x.constant == item) != null) {
+					this.alignmentHorizontal = item;
+				} else if (enumAlignmentVertical.find((x) => x.constant == item) != null) {
+					this.alignmentVertical = item;
+				}
+			}
+			this.updateLabelDisplay();
+		}
+		setProp_alignmentHorizontal(value) {
+			this.alignmentHorizontal = value;
+			this.updateLabelDisplay();
+		}
+		setProp_alignmentVertical(value) {
+			this.alignmentVertical = value;
+			this.updateLabelDisplay();
+		}
+		setProp_wordWrap(value) {
+			this.wordWrap = value;
+			this.updateLabelDisplay();
+		}
+
+		getProp_text() {
+			return this.text;
+		}
+		getProp_alignment() {
+			return `${this.alignmentHorizontal}|${this.alignmentVertical}`;
+		}
+		getProp_alignmentHorizontal() {
+			return this.alignmentHorizontal;
+		}
+		getProp_alignmentVertical() {
+			return this.alignmentVertical;
+		}
+		getProp_wordWrap() {
+			return this.wordWrap;
+		}
+
+		exportProperties(doc) {
+			const props = super.exportProperties(doc);
+			return [
+				...props,
+				this.text === "" ? null : this.createXMLBasicProperty(doc, "text", "string", this.text),
+				this.createXMLBasicProperty(doc, "wordWrap", "bool", this.wordWrap),
+				this.createXMLBasicProperty(doc, "alignment", "set", this.getProp_alignment()),
+			];
+		}
+	}
+
 	const elements = {
 		QWidget,
 		QAbstractButton,
 		QPushButton,
 		QProgressBar,
 		QFrame,
+		QLabel,
 	};
 
 	function addWidgetFromElement(/** @type {Element} */ raw) {

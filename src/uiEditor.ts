@@ -86,7 +86,7 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
                 <div class="sidebar">
                     <div class="view">
                         <button class="view-title">Object Inspector</button>
-                        <div class="view-content" style="overflow-y: auto;">
+                        <div class="view-content">
                             <ul id="objectInspectorRoot">
 
                             </ul>
