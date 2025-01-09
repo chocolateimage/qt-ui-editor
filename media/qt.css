@@ -42,7 +42,7 @@
 
     background: var(--qt-button-background);
     border: 1px solid var(--qt-button-border);
-    border-radius: 2px;
+    border-radius: 3px;
     color: var(--qt-button-text);
 }
 
