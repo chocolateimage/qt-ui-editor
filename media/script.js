@@ -339,6 +339,22 @@
 					});
 					propValueElement.appendChild(input);
 					propertyEditorProperty.input = input;
+				} else if (defaultProp.type == "enum") {
+					const select = document.createElement("select");
+					for (const option of defaultProp.options) {
+						const optionElement = document.createElement("option");
+						optionElement.value = option.constant;
+						optionElement.textContent = option.label;
+						optionElement.title = option.description;
+						select.appendChild(optionElement);
+					}
+					select.addEventListener("change", () => {
+						let newValue = select.value;
+						this.setProperty(defaultProp.name, newValue);
+						save();
+					});
+					propValueElement.appendChild(select);
+					propertyEditorProperty.input = select;
 				}
 				this._propertyEditorProperties[defaultProp.name] = propertyEditorProperty;
 				this.invalidateProperty(defaultProp.name);
@@ -688,11 +704,109 @@
 		}
 	}
 
+	class QFrame extends QWidget {
+		static enumShape = [
+			{ constant: "QFrame::NoFrame", label: "No Frame", description: "Draws nothing around its contents" },
+			{ constant: "QFrame::Box", label: "Box", description: "Draws a box around its contents" },
+			{ constant: "QFrame::Panel", label: "Panel", description: "Draws a panel to make the contents appear raised or sunken" },
+			{ constant: "QFrame::StyledPanel", label: "Styled Panel", description: "Draws a rectangular panel with a look that depends on the current GUI style" },
+			{ constant: "QFrame::HLine", label: "Horizontal Line", description: "Draws a horizontal line that frames nothing (useful as separator)" },
+			{ constant: "QFrame::VLine", label: "Vertical Line", description: "Draws a vertical line that frames nothing (useful as separator)" },
+			{ constant: "QFrame::WinPanel", label: "WinPanel (legacy)", description: "Draws a rectangular panel that can be raised or sunken like those in Windows 2000. Specifying this shape sets the line width to 2 pixels. WinPanel is provided for compatibility. For GUI style independence we recommend using StyledPanel instead." },
+		];
+
+		static enumShadow = [
+			{ constant: "QFrame::Plain", label: "Plain", description: "The frame and contents appear level with the surroundings; draws using the palette QPalette::WindowText color (without any 3D effect)" },
+			{ constant: "QFrame::Raised", label: "Raised", description: "The frame and contents appear raised; draws a 3D raised line using the light and dark colors of the current color group" },
+			{ constant: "QFrame::Sunken", label: "Sunken", description: "The frame and contents appear sunken; draws a 3D sunken line using the light and dark colors of the current color group" },
+		];
+
+		constructor() {
+			super();
+			this.element.classList.add("QFrame");
+
+			this.frameShape = "QFrame::NoFrame";
+			this.frameShadow = "QFrame::Plain";
+			this.lineWidth = 1;
+			this.midLineWidth = 0;
+
+			this.updateDisplay();
+		}
+
+		getDefaultProps() {
+			return [
+				...super.getDefaultProps(),
+				{ separator: "QFrame" },
+				{ name: "frameShape", type: "enum", default: "QFrame::NoFrame", label: "Frame Shape", options: QFrame.enumShape },
+				{ name: "frameShadow", type: "enum", default: "QFrame::Plain", label: "Frame Shadow", options: QFrame.enumShadow },
+				{ name: "lineWidth", type: "number", default: 1, label: "Line Width" },
+				{ name: "midLineWidth", type: "number", default: 0, label: "Mid-line Width" },
+			];
+		}
+
+		updateDisplay() {
+			for (const className of [...this.element.classList]) {
+				if (className.startsWith("QFrame-")) {
+					this.element.classList.remove(className);
+				}
+			}
+			this.element.style.setProperty("--QFrame-line-width", this.lineWidth + "px");
+			this.element.style.setProperty("--QFrame-mid-line-width", this.midLineWidth + "px");
+			this.element.classList.add(this.frameShape.replaceAll("::", "-"));
+			this.element.classList.add(this.frameShadow.replaceAll("::", "-"));
+		}
+
+		setProp_frameShape(value) {
+			this.frameShape = value;
+			this.updateDisplay();
+			this.invalidateProperty('frameShape');
+		}
+		setProp_frameShadow(value) {
+			this.frameShadow = value;
+			this.updateDisplay();
+			this.invalidateProperty('frameShadow');
+		}
+		setProp_lineWidth(value) {
+			this.lineWidth = value;
+			this.updateDisplay();
+			this.invalidateProperty('lineWidth');
+		}
+		setProp_midLineWidth(value) {
+			this.midLineWidth = value;
+			this.updateDisplay();
+			this.invalidateProperty('midLineWidth');
+		}
+		getProp_frameShape() {
+			return this.frameShape;
+		}
+		getProp_frameShadow() {
+			return this.frameShadow;
+		}
+		getProp_lineWidth() {
+			return this.lineWidth;
+		}
+		getProp_midLineWidth() {
+			return this.midLineWidth;
+		}
+
+		exportProperties(doc) {
+			const props = super.exportProperties(doc);
+			return [
+				...props,
+				this.frameShape === "QFrame::NoFrame" ? null : this.createXMLBasicProperty(doc, "frameShape", "enum", this.frameShape),
+				this.frameShadow === "QFrame::Plain" ? null : this.createXMLBasicProperty(doc, "frameShadow", "enum", this.frameShadow),
+				this.lineWidth === 1 ? null : this.createXMLBasicProperty(doc, "lineWidth", "number", this.lineWidth),
+				this.midLineWidth === 0 ? null : this.createXMLBasicProperty(doc, "midLineWidth", "number", this.midLineWidth),
+			];
+		}
+	}
+
 	const elements = {
 		QWidget,
 		QAbstractButton,
 		QPushButton,
-		QProgressBar
+		QProgressBar,
+		QFrame,
 	};
 
 	function addWidgetFromElement(/** @type {Element} */ raw) {

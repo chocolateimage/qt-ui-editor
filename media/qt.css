@@ -75,3 +75,145 @@
     position: absolute;
     z-index: 2;
 }
+
+
+.QFrame-StyledPanel {
+    border: 1px solid #B8B8B8;
+}
+
+.QFrame-Box.QFrame-Plain, .QFrame-Panel.QFrame-Plain {
+    border: var(--QFrame-line-width) solid var(--qt-window-text);
+}
+
+.QFrame-Panel.QFrame-Raised {
+    border-left: var(--QFrame-line-width) solid var(--qt-base);
+    border-top: var(--QFrame-line-width) solid var(--qt-base);
+    border-right: var(--QFrame-line-width) solid var(--qt-border);
+    border-bottom: var(--QFrame-line-width) solid var(--qt-border);
+}
+.QFrame-Panel.QFrame-Sunken {
+    border-right: var(--QFrame-line-width) solid var(--qt-base);
+    border-bottom: var(--QFrame-line-width) solid var(--qt-base);
+    border-left: var(--QFrame-line-width) solid var(--qt-border);
+    border-top: var(--QFrame-line-width) solid var(--qt-border);
+}
+
+.QFrame-VLine::before, .QFrame-HLine::before {
+    content: ' ';
+
+    position: absolute;
+}
+.QFrame-VLine.QFrame-Plain::before {
+    width: var(--QFrame-line-width);
+    height: 100%;
+
+    left: 50%;
+    transform: translateX(-50%);
+
+    background: var(--qt-window-text);
+}
+.QFrame-HLine.QFrame-Plain::before {
+    width: 100%;
+    height: var(--QFrame-line-width);
+
+    top: 50%;
+    transform: translateY(-50%);
+
+    background: var(--qt-window-text);
+}
+.QFrame-VLine.QFrame-Raised::before {
+    width: calc(var(--QFrame-mid-line-width) + var(--QFrame-line-width) + var(--QFrame-line-width));
+    height: 100%;
+
+    left: 50%;
+    transform: translateX(-50%);
+
+    background: #B8B8B8;
+
+    border-left: var(--QFrame-line-width) solid var(--qt-base);
+    border-top: var(--QFrame-line-width) solid var(--qt-base);
+    border-right: var(--QFrame-line-width) solid var(--qt-border);
+    border-bottom: var(--QFrame-line-width) solid var(--qt-border);
+}
+.QFrame-HLine.QFrame-Raised::before {
+    width: 100%;
+    height: calc(var(--QFrame-mid-line-width) + var(--QFrame-line-width) + var(--QFrame-line-width));
+
+    top: 50%;
+    transform: translateY(-50%);
+
+    background: #B8B8B8;
+
+    border-left: var(--QFrame-line-width) solid var(--qt-base);
+    border-top: var(--QFrame-line-width) solid var(--qt-base);
+    border-right: var(--QFrame-line-width) solid var(--qt-border);
+    border-bottom: var(--QFrame-line-width) solid var(--qt-border);
+}
+.QFrame-VLine.QFrame-Sunken::before {
+    width: calc(var(--QFrame-mid-line-width) + var(--QFrame-line-width) + var(--QFrame-line-width));
+    height: 100%;
+
+    left: 50%;
+    transform: translateX(-50%);
+
+    background: #B8B8B8;
+
+    border-right: var(--QFrame-line-width) solid var(--qt-base);
+    border-bottom: var(--QFrame-line-width) solid var(--qt-base);
+    border-left: var(--QFrame-line-width) solid var(--qt-border);
+    border-top: var(--QFrame-line-width) solid var(--qt-border);
+}
+.QFrame-HLine.QFrame-Sunken::before {
+    width: 100%;
+    height: calc(var(--QFrame-mid-line-width) + var(--QFrame-line-width) + var(--QFrame-line-width));
+
+    top: 50%;
+    transform: translateY(-50%);
+
+    background: #B8B8B8;
+
+    border-right: var(--QFrame-line-width) solid var(--qt-base);
+    border-bottom: var(--QFrame-line-width) solid var(--qt-base);
+    border-left: var(--QFrame-line-width) solid var(--qt-border);
+    border-top: var(--QFrame-line-width) solid var(--qt-border);
+}
+
+.QFrame-WinPanel.QFrame-Sunken::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    border-right: 1px solid #cacaca;
+    border-bottom: 1px solid #cacaca;
+    border-top: 1px solid var(--qt-border);
+    border-left: 1px solid var(--qt-border);
+}
+.QFrame-WinPanel.QFrame-Sunken {
+    border-right: 1px solid var(--qt-base);
+    border-bottom: 1px solid var(--qt-base);
+    border-top: 1px solid #767676;
+    border-left: 1px solid #767676;
+}
+.QFrame-WinPanel.QFrame-Plain {
+    border: 2px solid var(--qt-window-text);
+}
+.QFrame-WinPanel.QFrame-Raised::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    border-left: 1px solid #cacaca;
+    border-top: 1px solid #cacaca;
+    border-right: 1px solid var(--qt-border);
+    border-bottom: 1px solid var(--qt-border);
+}
+.QFrame-WinPanel.QFrame-Raised {
+    border-left: 1px solid var(--qt-base);
+    border-top: 1px solid var(--qt-base);
+    border-right: 1px solid #767676;
+    border-bottom: 1px solid #767676;
+}
