@@ -200,5 +200,9 @@ body {
 }
 
 .warning.show {
-    display: block;
+    display: flex;
+}
+
+.warning-link {
+    margin-left: auto;
 }
