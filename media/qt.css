@@ -8,7 +8,6 @@
     --qt-button-text: #000000;
     --qt-border: #9F9F9F;
     --qt-base: #FFFFFF;
-
     --qt-primary-outline: #22648D;
     --qt-primary-border: #60b8f0;
     --qt-primary-background: linear-gradient(#39A5EA, #318FCA);
@@ -19,20 +18,24 @@
 }
 
 .main {
-    user-select: none;
     cursor: default;
+
+    user-select: none;
 }
 
 .QWidget {
-    border: 1px dotted var(--qt-border);
     overflow: hidden;
+
+    border: 1px dotted var(--qt-border);
 }
 
 .main > .QWidget {
-    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAAAAACoWZBhAAAAFklEQVQI12OcH8AABYzvYSwGJgbaMAHFSAHxfa1OEgAAAABJRU5ErkJggg==');
     border: none;
-    color: var(--qt-window-text);
+
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAAAAACoWZBhAAAAFklEQVQI12OcH8AABYzvYSwGJgbaMAHFSAHxfa1OEgAAAABJRU5ErkJggg==');
+
     font-size: 10pt;
+    color: var(--qt-window-text);
 }
 
 .QPushButton {
@@ -40,9 +43,11 @@
     justify-content: center;
     align-items: center;
 
-    background: var(--qt-button-background);
     border: 1px solid var(--qt-button-border);
     border-radius: 3px;
+
+    background: var(--qt-button-background);
+
     color: var(--qt-button-text);
 }
 
@@ -51,29 +56,32 @@
     justify-content: center;
     align-items: center;
 
-    background: var(--qt-base);
+    overflow: visible;
+
     border: 1px solid var(--qt-border);
     border-radius: 3px;
 
-    overflow: visible;
+    background: var(--qt-base);
 }
 
 .QProgressBar > div {
+    z-index: 1;
     position: absolute;
-    left: 0;
     top: 0;
-    height: 100%;
+    left: 0;
 
-    outline: 1px solid var(--qt-primary-outline);
     border: 1px solid var(--qt-primary-border);
-    background: var(--qt-primary-background);
     border-radius: 2px;
 
-    z-index: 1;
+    height: 100%;
+
+    background: var(--qt-primary-background);
+
+    outline: 1px solid var(--qt-primary-outline);
 }
 .QProgressBar > span {
-    position: absolute;
     z-index: 2;
+    position: absolute;
 }
 
 
@@ -86,15 +94,15 @@
 }
 
 .QFrame-Panel.QFrame-Raised {
-    border-left: var(--QFrame-line-width) solid var(--qt-base);
-    border-top: var(--QFrame-line-width) solid var(--qt-base);
-    border-right: var(--QFrame-line-width) solid var(--qt-border);
     border-bottom: var(--QFrame-line-width) solid var(--qt-border);
+    border-left: var(--QFrame-line-width) solid var(--qt-base);
+    border-right: var(--QFrame-line-width) solid var(--qt-border);
+    border-top: var(--QFrame-line-width) solid var(--qt-base);
 }
 .QFrame-Panel.QFrame-Sunken {
-    border-right: var(--QFrame-line-width) solid var(--qt-base);
     border-bottom: var(--QFrame-line-width) solid var(--qt-base);
     border-left: var(--QFrame-line-width) solid var(--qt-border);
+    border-right: var(--QFrame-line-width) solid var(--qt-base);
     border-top: var(--QFrame-line-width) solid var(--qt-border);
 }
 
@@ -104,118 +112,130 @@
     position: absolute;
 }
 .QFrame-VLine.QFrame-Plain::before {
+    left: 50%;
+
+    transform: translateX(-50%);
+
     width: var(--QFrame-line-width);
     height: 100%;
-
-    left: 50%;
-    transform: translateX(-50%);
 
     background: var(--qt-window-text);
 }
 .QFrame-HLine.QFrame-Plain::before {
+    top: 50%;
+
+    transform: translateY(-50%);
+
     width: 100%;
     height: var(--QFrame-line-width);
-
-    top: 50%;
-    transform: translateY(-50%);
 
     background: var(--qt-window-text);
 }
 .QFrame-VLine.QFrame-Raised::before {
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    border-bottom: var(--QFrame-line-width) solid var(--qt-border);
+    border-left: var(--QFrame-line-width) solid var(--qt-base);
+    border-right: var(--QFrame-line-width) solid var(--qt-border);
+    border-top: var(--QFrame-line-width) solid var(--qt-base);
+
     width: calc(var(--QFrame-mid-line-width) + var(--QFrame-line-width) + var(--QFrame-line-width));
     height: 100%;
 
-    left: 50%;
-    transform: translateX(-50%);
-
     background: #B8B8B8;
-
-    border-left: var(--QFrame-line-width) solid var(--qt-base);
-    border-top: var(--QFrame-line-width) solid var(--qt-base);
-    border-right: var(--QFrame-line-width) solid var(--qt-border);
-    border-bottom: var(--QFrame-line-width) solid var(--qt-border);
 }
 .QFrame-HLine.QFrame-Raised::before {
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    border-bottom: var(--QFrame-line-width) solid var(--qt-border);
+    border-left: var(--QFrame-line-width) solid var(--qt-base);
+    border-right: var(--QFrame-line-width) solid var(--qt-border);
+    border-top: var(--QFrame-line-width) solid var(--qt-base);
+
     width: 100%;
     height: calc(var(--QFrame-mid-line-width) + var(--QFrame-line-width) + var(--QFrame-line-width));
 
-    top: 50%;
-    transform: translateY(-50%);
-
     background: #B8B8B8;
-
-    border-left: var(--QFrame-line-width) solid var(--qt-base);
-    border-top: var(--QFrame-line-width) solid var(--qt-base);
-    border-right: var(--QFrame-line-width) solid var(--qt-border);
-    border-bottom: var(--QFrame-line-width) solid var(--qt-border);
 }
 .QFrame-VLine.QFrame-Sunken::before {
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    border-bottom: var(--QFrame-line-width) solid var(--qt-base);
+    border-left: var(--QFrame-line-width) solid var(--qt-border);
+    border-right: var(--QFrame-line-width) solid var(--qt-base);
+    border-top: var(--QFrame-line-width) solid var(--qt-border);
+
     width: calc(var(--QFrame-mid-line-width) + var(--QFrame-line-width) + var(--QFrame-line-width));
     height: 100%;
 
-    left: 50%;
-    transform: translateX(-50%);
-
     background: #B8B8B8;
-
-    border-right: var(--QFrame-line-width) solid var(--qt-base);
-    border-bottom: var(--QFrame-line-width) solid var(--qt-base);
-    border-left: var(--QFrame-line-width) solid var(--qt-border);
-    border-top: var(--QFrame-line-width) solid var(--qt-border);
 }
 .QFrame-HLine.QFrame-Sunken::before {
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    border-bottom: var(--QFrame-line-width) solid var(--qt-base);
+    border-left: var(--QFrame-line-width) solid var(--qt-border);
+    border-right: var(--QFrame-line-width) solid var(--qt-base);
+    border-top: var(--QFrame-line-width) solid var(--qt-border);
+
     width: 100%;
     height: calc(var(--QFrame-mid-line-width) + var(--QFrame-line-width) + var(--QFrame-line-width));
 
-    top: 50%;
-    transform: translateY(-50%);
-
     background: #B8B8B8;
-
-    border-right: var(--QFrame-line-width) solid var(--qt-base);
-    border-bottom: var(--QFrame-line-width) solid var(--qt-base);
-    border-left: var(--QFrame-line-width) solid var(--qt-border);
-    border-top: var(--QFrame-line-width) solid var(--qt-border);
 }
 
 .QFrame-WinPanel.QFrame-Sunken::before {
     content: '';
+
     position: absolute;
-    left: 0;
     top: 0;
+    left: 0;
+
+    border-bottom: 1px solid #cacaca;
+    border-left: 1px solid var(--qt-border);
+    border-right: 1px solid #cacaca;
+    border-top: 1px solid var(--qt-border);
+
     width: 100%;
     height: 100%;
-    border-right: 1px solid #cacaca;
-    border-bottom: 1px solid #cacaca;
-    border-top: 1px solid var(--qt-border);
-    border-left: 1px solid var(--qt-border);
 }
 .QFrame-WinPanel.QFrame-Sunken {
-    border-right: 1px solid var(--qt-base);
     border-bottom: 1px solid var(--qt-base);
-    border-top: 1px solid #767676;
     border-left: 1px solid #767676;
+    border-right: 1px solid var(--qt-base);
+    border-top: 1px solid #767676;
 }
 .QFrame-WinPanel.QFrame-Plain {
     border: 2px solid var(--qt-window-text);
 }
 .QFrame-WinPanel.QFrame-Raised::before {
     content: '';
+
     position: absolute;
-    left: 0;
     top: 0;
+    left: 0;
+
+    border-bottom: 1px solid var(--qt-border);
+    border-left: 1px solid #cacaca;
+    border-right: 1px solid var(--qt-border);
+    border-top: 1px solid #cacaca;
+
     width: 100%;
     height: 100%;
-    border-left: 1px solid #cacaca;
-    border-top: 1px solid #cacaca;
-    border-right: 1px solid var(--qt-border);
-    border-bottom: 1px solid var(--qt-border);
 }
 .QFrame-WinPanel.QFrame-Raised {
-    border-left: 1px solid var(--qt-base);
-    border-top: 1px solid var(--qt-base);
-    border-right: 1px solid #767676;
     border-bottom: 1px solid #767676;
+    border-left: 1px solid var(--qt-base);
+    border-right: 1px solid #767676;
+    border-top: 1px solid var(--qt-base);
 }
 
 .QLabel {
@@ -225,13 +245,14 @@
 .QLineEdit {
     display: flex;
 
-    background: var(--qt-base);
-    color: var(--qt-window-text);
-
+    border: 1px solid var(--qt-button-border);
     border-radius: 3px;
+
     padding: 0px 3px;
 
-    border: 1px solid var(--qt-button-border);
+    background: var(--qt-base);
+
+    color: var(--qt-window-text);
 
     white-space: pre;
 }
@@ -245,12 +266,12 @@
     content: ' ';
 
     position: absolute;
-
     top: 0;
     left: 0;
 
     width: 100%;
     height: 1px;
+
     background: #ededed;
 }
 .QLineEdit-clearbutton {
@@ -258,13 +279,15 @@
 }
 .QLineEdit-clearbutton::after {
     content: " ";
+
     position: absolute;
     top: 50%;
     right: 6px;
+
     transform: translateY(-50%);
 
     width: 16px;
     height: 12px;
-    
+
     background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAMAAABcOc2zAAABhWlDQ1BJQ0MgcHJvZmlsZQAAKJF9kTtIw1AUhv+2SqVUROwg4pChOogFX4ijVqEIFUKt0KqDyU1f0KQhSXFxFFwLDj4Wqw4uzro6uAqC4APEXXBSdJESz00KLWI8cLkf/z3/z73nAv56malmxxigapaRSsSFTHZVCL7ChxB6MY4RiZn6nCgm4Vlf99RNdRfjWd59f1a3kjMZ4BOIZ5luWMQbxNObls55nzjCipJCfE48atAFiR+5Lrv8xrngsJ9nRox0ap44QiwU2lhuY1Y0VOIp4qiiapTvz7iscN7irJarrHlP/sJwTltZ5jqtQSSwiCWIECCjihLKsBCjXSPFRIrO4x7+AccvkksmVwmMHAuoQIXk+MH/4PdszfzkhJsUjgOdL7b9MQQEd4FGzba/j227cQIEnoErreWv1IGZT9JrLS16BPRsAxfXLU3eAy53gP4nXTIkRwrQ8ufzwPsZfVMW6LsFQmvu3JrnOH0A0jSr5A1wcAgMFyh73ePdXe1z+7enOb8fn8dyubcvqlIAAAAJcEhZcwAALiMAAC4jAXilP3YAAAAHdElNRQfpAQoSIhF94jjyAAAAGXRFWHRDb21tZW50AENyZWF0ZWQgd2l0aCBHSU1QV4EOFwAAAFdQTFRFAAAAiIqFlJaRlZaSmJuWmp2XnJ+ZnZ+atriytrmyur22wcO+w8XAxMfBzc/KztDL1NXS1tbT2NjV3NzZ3N7a3d3a3t/c4uLg4+Th7Ozr7u7s7+/t////prY2pgAAAAFiS0dEAIgFHUgAAABZSURBVAjXZY5ZEoAgDEOLuygu4Ebw/udUFmfKmL+8Nm3o9trkp4lyLyUlL4quL0UEYY61rhYEEPctjIH1IOWHE7hGBpodOFoW0Xil+VGnlAN7m/X4FeNkfgCN4Qtye6jO1AAAAABJRU5ErkJggg==");
 }
