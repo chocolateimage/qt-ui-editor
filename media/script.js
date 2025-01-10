@@ -33,6 +33,11 @@
 		{constant: "Qt::AlignBaseline", label: "Baseline"},
 	];
 
+	const enumCursorMoveStyle = [
+		{constant: "Qt::LogicalMoveStyle", label: "Logical Move Style", description: "Within a left-to-right text block, decrease cursor position when pressing left arrow key, increase cursor position when pressing the right arrow key. If the text block is right-to-left, the opposite behavior applies."},
+		{constant: "Qt::VisualMoveStyle", label: "Visual Move Style", description: "Pressing the left arrow key will always cause the cursor to move left, regardless of the text's writing direction. Pressing the right arrow key will always cause the cursor to move right."},
+	];
+
 	class QWidget {
 		constructor() {
 			this.element = document.createElement("div");
@@ -360,7 +365,9 @@
 						const optionElement = document.createElement("option");
 						optionElement.value = option.constant;
 						optionElement.textContent = option.label;
-						optionElement.title = option.description;
+						if (option.description != null) {
+							optionElement.title = option.description;
+						}
 						select.appendChild(optionElement);
 					}
 					select.addEventListener("change", () => {
@@ -573,7 +580,11 @@
 			for (const [key, value] of Object.entries(this.props)) {
 				const property = doc.createElement("property");
 				property.setAttribute("name", key);
-				const propertyValue = doc.createElement(typeof value);
+				let type = typeof value;
+				if (type == "boolean") {
+					type = "bool";
+				}
+				const propertyValue = doc.createElement(type);
 				propertyValue.textContent = value.toString();
 				property.appendChild(propertyValue);
 				properties.push(property);
@@ -935,6 +946,181 @@
 		}
 	}
 
+	class QLineEdit extends QWidget {
+		static enumEchoMode = [
+			{ constant: "QLineEdit::Normal", label: "Normal", description: "Display characters as they are entered. This is the default." },
+			{ constant: "QLineEdit::NoEcho", label: "No Echo", description: "Do not display anything. This may be appropriate for passwords where even the length of the password should be kept secret." },
+			{ constant: "QLineEdit::Password", label: "Password", description: "Display platform-dependent password mask characters instead of the characters actually entered." },
+			{ constant: "QLineEdit::PasswordEchoOnEdit", label: "Password Echo On Edit", description: "Display characters only while they are entered. Otherwise, display characters as with Password." },
+		];
+
+		constructor() {
+			super();
+			this.element.classList.add("QLineEdit");
+
+			this.text = "";
+			this.frame = true;
+			this.alignmentHorizontal = "Qt::AlignLeft";
+			this.alignmentVertical = "Qt::AlignVCenter";
+			this.placeholderText = "";
+			this.clearButtonEnabled = false;
+			this.echoMode = "QLineEdit::Normal";
+			this.cursorMoveStyle = "Qt::LogicalMoveStyle";
+
+			this.updateDisplay();
+		}
+
+		getDefaultProps() {
+			return [
+				...super.getDefaultProps(),
+				{ separator: "QLineEdit" },
+				{ name: "text", type: "string", default: "", label: "Text" },
+				{ name: "maxLength", type: "number", default: 32767, label: "Max Length" },
+				{ name: "placeholderText", type: "string", default: "", label: "Placeholder Text" },
+				{ name: "inputMask", type: "string", default: "", label: "Input Mask" },
+				{ name: "echoMode", type: "enum", default: "QLineEdit::Normal", label: "Echo Mode", options: QLineEdit.enumEchoMode },
+				{ name: "frame", type: "bool", default: true, label: "Frame" },
+				{ name: "alignmentHorizontal", type: "enum", default: "Qt::AlignLeft", label: "Alignment Horizontal", options: enumAlignmentHorizontal },
+				{ name: "alignmentVertical", type: "enum", default: "Qt::AlignVCenter", label: "Alignment Vertical", options: enumAlignmentVertical },
+				{ name: "dragEnabled", type: "bool", default: false, label: "Drag Enabled" },
+				{ name: "readOnly", type: "bool", default: false, label: "Read Only" },
+				{ name: "clearButtonEnabled", type: "bool", default: false, label: "Clear Button" },
+				{ name: "cursorMoveStyle", type: "enum", default: "Qt::LogicalMoveStyle", label: "Cursor Move Style", options: enumCursorMoveStyle },
+			];
+		}
+
+		updateDisplay() {
+			const isPlaceholder = this.text == "";
+			if (isPlaceholder) {
+				this.element.textContent = this.placeholderText;
+				this.element.classList.add("QLineEdit-placeholder");
+			} else {
+				if (this.echoMode === "QLineEdit::Password" || this.echoMode === "QLineEdit::PasswordEchoOnEdit") {
+					this.element.textContent = "•".repeat(this.text.length);
+				} else if (this.echoMode === "QLineEdit::NoEcho") {
+					this.element.textContent = "";
+				} else {
+					this.element.textContent = this.text;
+				}
+				this.element.classList.remove("QLineEdit-placeholder");
+			}
+
+			if (this.frame) {
+				this.element.classList.remove("QLineEdit-noframe");
+			} else {
+				this.element.classList.add("QLineEdit-noframe");
+			}
+
+			if (this.clearButtonEnabled) {
+				this.element.classList.add("QLineEdit-clearbutton");
+			} else {
+				this.element.classList.remove("QLineEdit-clearbutton");
+			}
+
+			if (this.alignmentHorizontal == "Qt::AlignLeft" || this.alignmentHorizontal == "Qt::AlignJustify") {
+				this.element.style.justifyContent = "left";
+				this.element.style.textAlign = "left";
+			} else if (this.alignmentHorizontal == "Qt::AlignHCenter") {
+				this.element.style.justifyContent = "center";
+				this.element.style.textAlign = "center";
+			} else if (this.alignmentHorizontal == "Qt::AlignRight") {
+				this.element.style.justifyContent = "right";
+				this.element.style.textAlign = "right";
+			}
+			if (this.alignmentVertical == "Qt::AlignTop") {
+				this.element.style.alignItems = "start";
+			} else if (this.alignmentVertical == "Qt::AlignVCenter" || this.alignmentVertical == "Qt::AlignBaseline") {
+				this.element.style.alignItems = "center";
+			} else if (this.alignmentVertical == "Qt::AlignBottom") {
+				this.element.style.alignItems = "end";
+			}
+		}
+
+		setProp_text(value) {
+			this.text = value;
+			this.updateDisplay();
+		}
+		setProp_placeholderText(value) {
+			this.placeholderText = value;
+			this.updateDisplay();
+		}
+		setProp_alignment(value) {
+			for (const item of value.split("|")) {
+				if (enumAlignmentHorizontal.find((x) => x.constant == item) != null) {
+					this.alignmentHorizontal = item;
+				} else if (enumAlignmentVertical.find((x) => x.constant == item) != null) {
+					this.alignmentVertical = item;
+				}
+			}
+			this.updateDisplay();
+		}
+		setProp_alignmentHorizontal(value) {
+			this.alignmentHorizontal = value;
+			this.updateDisplay();
+		}
+		setProp_alignmentVertical(value) {
+			this.alignmentVertical = value;
+			this.updateDisplay();
+		}
+		setProp_frame(value) {
+			this.frame = value;
+			this.updateDisplay();
+		}
+		setProp_clearButtonEnabled(value) {
+			this.clearButtonEnabled = value;
+			this.updateDisplay();
+		}
+		setProp_echoMode(value) {
+			this.echoMode = value;
+			this.updateDisplay();
+		}
+		setProp_cursorMoveStyle(value) {
+			this.cursorMoveStyle = value;
+		}
+
+		getProp_text() {
+			return this.text;
+		}
+		getProp_placeholderText() {
+			return this.placeholderText;
+		}
+		getProp_alignment() {
+			return `${this.alignmentHorizontal}|${this.alignmentVertical}`;
+		}
+		getProp_alignmentHorizontal() {
+			return this.alignmentHorizontal;
+		}
+		getProp_alignmentVertical() {
+			return this.alignmentVertical;
+		}
+		getProp_frame() {
+			return this.frame;
+		}
+		getProp_clearButtonEnabled() {
+			return this.clearButtonEnabled;
+		}
+		getProp_echoMode() {
+			return this.echoMode;
+		}
+		getProp_cursorMoveStyle() {
+			return this.cursorMoveStyle;
+		}
+
+		exportProperties(doc) {
+			const props = super.exportProperties(doc);
+			return [
+				...props,
+				this.text === "" ? null : this.createXMLBasicProperty(doc, "text", "string", this.text),
+				this.createXMLBasicProperty(doc, "frame", "bool", this.frame),
+				this.createXMLBasicProperty(doc, "placeholderText", "string", this.placeholderText),
+				this.createXMLBasicProperty(doc, "alignment", "set", this.getProp_alignment()),
+				this.clearButtonEnabled === false ? null : this.createXMLBasicProperty(doc, "clearButtonEnabled", "bool", this.clearButtonEnabled),
+				this.echoMode === "QLineEdit::Normal" ? null : this.createXMLBasicProperty(doc, "echoMode", "set", this.echoMode),
+				this.cursorMoveStyle === "Qt::LogicalMoveStyle" ? null : this.createXMLBasicProperty(doc, "cursorMoveStyle", "set", this.cursorMoveStyle),
+			];
+		}
+	}
+
 	const elements = {
 		QWidget,
 		QAbstractButton,
@@ -942,6 +1128,7 @@
 		QProgressBar,
 		QFrame,
 		QLabel,
+		QLineEdit,
 	};
 
 	function addWidgetFromElement(/** @type {Element} */ raw) {
