@@ -103,6 +103,9 @@
 		}
 
 		free() {
+			if (currentSelection == this) {
+				setCurrentSelection(null);
+			}
 			for (const child of this.children) {
 				child.free();
 			}
@@ -1230,6 +1233,58 @@
 			element.parentElement.querySelector(".view-content").classList.toggle("view-content-hidden");
 		});
 	}
+
+	window.addEventListener("keydown", (event) => {
+		if (event.target.tagName == "INPUT") {
+			return;
+		}
+		if (currentSelection != null && !currentSelection.root) {
+			if (event.key == "Delete") {
+				currentSelection.free();
+				save();
+			}
+			const amountChange = event.ctrlKey ? 1 : 10;
+			if (event.shiftKey) {
+				if (event.key == "ArrowUp") {
+					const size = currentSelection.getSize();
+					currentSelection.setSize(size.width, size.height - amountChange);
+				} else if (event.key == "ArrowDown") {
+					const size = currentSelection.getSize();
+					currentSelection.setSize(size.width, size.height + amountChange);
+				} else if (event.key == "ArrowRight") {
+					const size = currentSelection.getSize();
+					currentSelection.setSize(size.width + amountChange, size.height);
+				} else if (event.key == "ArrowLeft") {
+					const size = currentSelection.getSize();
+					currentSelection.setSize(size.width - amountChange, size.height);
+				}
+			} else {
+				if (event.key == "ArrowUp") {
+					const position = currentSelection.getPosition();
+					currentSelection.setPosition(position.x, position.y - amountChange);
+				} else if (event.key == "ArrowDown") {
+					const position = currentSelection.getPosition();
+					currentSelection.setPosition(position.x, position.y + amountChange);
+				} else if (event.key == "ArrowRight") {
+					const position = currentSelection.getPosition();
+					currentSelection.setPosition(position.x + amountChange, position.y);
+				} else if (event.key == "ArrowLeft") {
+					const position = currentSelection.getPosition();
+					currentSelection.setPosition(position.x - amountChange, position.y);
+				}
+			}
+		}
+	});
+	window.addEventListener("keyup", (event) => {
+		if (event.target.tagName == "INPUT") {
+			return;
+		}
+		if (currentSelection != null && !currentSelection.root) {
+			if (event.key.startsWith("Arrow")) {
+				save();
+			}
+		}
+	});
 
     const state = vscode.getState();
 	if (state) {
