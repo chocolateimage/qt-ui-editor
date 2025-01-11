@@ -1447,6 +1447,7 @@
 		rootWidget = new QWidget();
 		rootWidget.name = "Form";
 		rootWidget.props.windowTitle = "Form";
+		rootWidget.setPosition(0, 0);
 		rootWidget.setSize(400, 300);
 		rootWidget.setAsRoot();
 		setCurrentSelection(rootWidget);
