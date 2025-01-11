@@ -28,6 +28,20 @@
 		return property;
 	}
 
+	function getWidgetByName(name, start) {
+		const widget = start ?? rootWidget;
+		if (widget.name == name) {
+			return widget;
+		}
+		for (const child of widget.children) {
+			const found = getWidgetByName(name, child);
+			if (found != null) {
+				return found;
+			}
+		}
+		return null;
+	}
+
 	const enumAlignmentHorizontal = [
 		{constant: "Qt::AlignLeft", label: "Left"},
 		{constant: "Qt::AlignHCenter", label: "Center"},
@@ -1364,6 +1378,103 @@
 		setContent(str);
 	}
 
+	function addToWidgetBox(widgetClass, label, icon, objectName, width, height, properties) {
+		const item = document.createElement("div");
+		const iconElement = document.createElement("img");
+		const nameElement = document.createElement("span");
+		item.classList.add("widget-box-item");
+		iconElement.src = "https://raw.githubusercontent.com/qt/qttools/2a0a764b03559deda30f7b1795d72cbbe324ed83/src/designer/src/components/formeditor/images/" + icon;
+		iconElement.width = "22";
+		iconElement.height = "22";
+		iconElement.draggable = false;
+		nameElement.textContent = label;
+		item.appendChild(iconElement);
+		item.appendChild(nameElement);
+
+		let overlay = null;
+		let addPreview = null;
+
+		function mouseDown(event) {
+			event.preventDefault();
+			window.addEventListener("mouseup", mouseUp);
+			window.addEventListener("mousemove", mouseMove);
+			addPreview = document.createElement("div");
+			addPreview.classList.add("add-preview");
+			addPreview.style.width = width + "px";
+			addPreview.style.height = height + "px";
+			document.body.appendChild(addPreview);
+			overlay = document.createElement("div");
+			overlay.classList.add("drag-overlay", "active");
+			document.body.appendChild(overlay);
+			mouseMove(event);
+		}
+		function mouseMove(event) {
+			addPreview.style.left = event.clientX + "px";
+			addPreview.style.top = event.clientY + "px";
+		}
+		function mouseUp(event) {
+			event.preventDefault();
+			window.removeEventListener("mouseup", mouseUp);
+			window.removeEventListener("mousemove", mouseMove);
+	
+			addPreview.remove();
+			overlay.remove();
+
+			const mouseX = event.clientX;
+			const mouseY = event.clientY;
+
+			const rootX = rootWidget.element.getBoundingClientRect().x;
+			const rootY = rootWidget.element.getBoundingClientRect().y;
+
+			let widgetX = mouseX - rootX;
+			let widgetY = mouseY - rootY;
+
+			widgetX = Math.round(widgetX / 10) * 10;
+			widgetY = Math.round(widgetY / 10) * 10;
+
+			if (widgetX < 0 || widgetY < 0) {
+				return;
+			}
+
+			let finalName = "";
+			let number = 0;
+			while (true) {
+				finalName = objectName;
+				if (number > 0) {
+					finalName += "_" + number;
+				}
+				if (!getWidgetByName(finalName)) {
+					break;
+				}
+				number += 1;
+			}
+
+			const widget = new widgetClass();
+			widget.name = finalName;
+			widget.setPosition(widgetX, widgetY);
+			widget.setSize(width, height);
+			if (properties != null) {
+				for ([key, value] of Object.entries(properties)) {
+					widget.setProperty(key, value);
+				}
+			}
+			rootWidget.addChild(widget);
+			save();
+		}
+
+		item.addEventListener("mousedown", mouseDown);
+
+		document.getElementById("widgetBoxList").appendChild(item);
+	}
+
+	function loadWidgetBox() {
+		addToWidgetBox(QWidget, "Widget", "widgets/widget.png", "widget", 120, 80);
+		addToWidgetBox(QFrame, "Frame", "widgets/frame.png", "frame", 120, 80);
+		addToWidgetBox(QLabel, "Label", "widgets/label.png", "label", 64, 16, {text: "TextLabel"});
+		addToWidgetBox(QPushButton, "Push Button", "widgets/pushbutton.png", "pushButton", 80, 24, {text: "PushButton"});
+		addToWidgetBox(QProgressBar, "Progress Bar", "widgets/progress.png", "progressBar", 118, 23, {value: 24});
+	}
+
 	function setContent(text) {
 		lastXMLSerialized = text;
 		vscode.postMessage({ type: 'update', content: text, });
@@ -1453,6 +1564,8 @@
 		setCurrentSelection(rootWidget);
 		save();
 	});
+
+	loadWidgetBox();
 
     const state = vscode.getState();
 	if (state) {

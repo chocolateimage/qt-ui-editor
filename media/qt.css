@@ -304,3 +304,12 @@
 .qt-layout-box .QWidget {
     position: relative;
 }
+
+.add-preview {
+    opacity: 0.7;
+
+    border: 1px solid var(--qt-border);
+    border-radius: 3px;
+
+    background: var(--qt-window);
+}

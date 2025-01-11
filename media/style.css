@@ -36,14 +36,18 @@ body {
     display: flex;
     flex-direction: column;
 
-    border-left: 1px solid var(--vscode-sideBar-border);
-
     width: 350px;
     height: 100%;
 
     background-color: var(--vscode-sideBar-background);
 
     color: var(--vscode-sideBar-foreground);
+}
+.sidebar-left {
+    border-right: 1px solid var(--vscode-sideBar-border);
+}
+.sidebar-right {
+    border-left: 1px solid var(--vscode-sideBar-border);
 }
 
 .view {
@@ -268,4 +272,31 @@ body {
 }
 .new-file h2 {
     margin-bottom: 16px;
+}
+
+#widgetBoxList {
+    display: flex;
+    flex-direction: column;
+}
+.widget-box-item {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+
+    padding: 6px 16px;
+
+    cursor: pointer;
+
+    user-select: none;
+    gap: 8px;
+}
+.widget-box-item:hover {
+    background: var(--vscode-list-hoverBackground);
+
+    color: var(--vscode-list-hoverForeground);
+}
+.add-preview {
+    z-index: 900;
+    position: fixed;
 }

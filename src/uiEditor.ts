@@ -87,9 +87,19 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
                 <a class="warning-link" href="https://github.com/chocolateimage/qt-ui-editor/issues/new">Submit issue...</a>
             </div>
             <div class="root" style="display: none;">
+                <div class="sidebar sidebar-left">
+                    <div class="view">
+                        <button class="view-title">Widget Box</button>
+                        <div class="view-content">
+                            <div id="widgetBoxList">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="main">
                 </div>
-                <div class="sidebar">
+                <div class="sidebar sidebar-right">
                     <div class="view">
                         <button class="view-title">Object Inspector</button>
                         <div class="view-content">
