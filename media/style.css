@@ -172,6 +172,10 @@ body {
 
     color: var(--vscode-list-activeSelectionForeground);
 }
+.inspector-element-label-class {
+    opacity: 0.5;
+    margin-left: 8px;
+}
 
 #propertyEditorTable {
     border-spacing: 0;

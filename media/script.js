@@ -71,6 +71,12 @@
 			this.inspectorElementLabel.addEventListener("click", () => {
 				setCurrentSelection(this);
 			});
+			this.inspectorElementLabelName = document.createElement("span");
+			this.inspectorElementLabelClass = document.createElement("span");
+			this.inspectorElementLabelClass.textContent = this.constructor.name;
+			this.inspectorElementLabelClass.classList.add("inspector-element-label-class");
+			this.inspectorElementLabel.appendChild(this.inspectorElementLabelName);
+			this.inspectorElementLabel.appendChild(this.inspectorElementLabelClass);
 			this.inspectorElement.appendChild(this.inspectorElementLabel);
 			this.inspectorElement.appendChild(this.inspectorElementContainer);
 
@@ -98,7 +104,7 @@
 
 		set name(newValue) {
 			this._name = newValue;
-			this.inspectorElementLabel.textContent = this._name;
+			this.inspectorElementLabelName.textContent = this._name;
 			this.invalidateProperty("name");
 		}
 
