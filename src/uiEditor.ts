@@ -86,7 +86,7 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
                 </span>
                 <a class="warning-link" href="https://github.com/chocolateimage/qt-ui-editor/issues/new">Submit issue...</a>
             </div>
-            <div class="root">
+            <div class="root" style="display: none;">
                 <div class="main">
                 </div>
                 <div class="sidebar">
@@ -114,6 +114,10 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="new-file" style="display: none;">
+                <h2>New empty file</h2>
+                <button id="newFileCreateButton">Create</button>
             </div>
             <script src="${scriptUri}"></script>
         </body>

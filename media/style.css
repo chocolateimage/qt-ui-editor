@@ -253,3 +253,19 @@ body {
 .warning-link {
     margin-left: auto;
 }
+
+.new-file {
+    display: flex;
+    flex-direction: column;
+
+    margin-inline: auto;
+
+    width: 100%;
+    max-width: 600px;
+
+    padding-top: 32px;
+    padding-inline: 16px;
+}
+.new-file h2 {
+    margin-bottom: 16px;
+}

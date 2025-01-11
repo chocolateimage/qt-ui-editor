@@ -725,6 +725,13 @@
 			}
 			return properties;
 		}
+
+		setAsRoot() {
+			this.root = true;
+			document.querySelector(".main").replaceChildren(this.element);
+			document.getElementById("objectInspectorRoot").appendChild(this.inspectorElement);
+			this.recalculate();
+		}
 	}
 
 	class QAbstractButton extends QWidget {
@@ -1310,6 +1317,16 @@
 	}
 
     function updateContent(/** @type {string} */ text) {
+		if (text == "") {
+			document.querySelector(".root").style.display = "none";
+			document.querySelector(".new-file").style.display = null;
+		} else {
+			document.querySelector(".new-file").style.display = "none";
+			document.querySelector(".root").style.display = null;
+			loadExistingContent(text);
+		}
+	}
+	function loadExistingContent(/** @type {string} */ text) {
 		const parser = new DOMParser();
 		const doc = parser.parseFromString(text, "text/xml");
 		const serializer = new XMLSerializer();
@@ -1328,10 +1345,7 @@
 			rootWidget.free();
 		}
 		rootWidget = addWidgetFromElement(rootWidgetRaw);
-		rootWidget.root = true;
-		document.querySelector(".main").replaceChildren(rootWidget.element);
-		document.getElementById("objectInspectorRoot").appendChild(rootWidget.inspectorElement);
-		rootWidget.recalculate();
+		rootWidget.setAsRoot();
     }
 
 	function save() {
@@ -1425,6 +1439,18 @@
 				save();
 			}
 		}
+	});
+
+	document.getElementById("newFileCreateButton").addEventListener("click", () => {
+		document.querySelector(".new-file").style.display = "none";
+		document.querySelector(".root").style.display = null;
+		rootWidget = new QWidget();
+		rootWidget.name = "Form";
+		rootWidget.props.windowTitle = "Form";
+		rootWidget.setSize(400, 300);
+		rootWidget.setAsRoot();
+		setCurrentSelection(rootWidget);
+		save();
 	});
 
     const state = vscode.getState();
