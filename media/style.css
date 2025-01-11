@@ -145,6 +145,13 @@ body {
 .selection-dot-BottomLeft {
     cursor: nesw-resize;
 }
+.selection-disabled {
+    border: 1px solid blue;
+
+    background: #9F9F9F;
+
+    pointer-events: none;
+}
 
 #objectInspectorRoot, #objectInspectorRoot ul {
     margin: 0;

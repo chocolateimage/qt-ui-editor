@@ -19,6 +19,15 @@
 		}
 	}
 
+	function createXMLBasicProperty(doc, name, type, value) {
+		const property = doc.createElement("property");
+		property.setAttribute("name", name);
+		const propertyValue = doc.createElement(type);
+		propertyValue.textContent = value;
+		property.appendChild(propertyValue);
+		return property;
+	}
+
 	const enumAlignmentHorizontal = [
 		{constant: "Qt::AlignLeft", label: "Left"},
 		{constant: "Qt::AlignHCenter", label: "Center"},
@@ -38,6 +47,79 @@
 		{constant: "Qt::VisualMoveStyle", label: "Visual Move Style", description: "Pressing the left arrow key will always cause the cursor to move left, regardless of the text's writing direction. Pressing the right arrow key will always cause the cursor to move right."},
 	];
 
+	class QLayout {
+		constructor() {
+			/** @type {QWidget} */
+			this.widget = null;
+
+			this.name = "";
+
+			this.marginLeft = 9;
+			this.marginTop = 9;
+			this.marginRight = 9;
+			this.marginBottom = 9;
+		}
+
+		update() {
+			for (const className of [...this.widget.element.classList]) {
+				if (className.startsWith("qt-layout")) {
+					this.widget.element.classList.remove(className);
+				}
+			}
+			this.widget.element.classList.add("qt-layout");
+			this.widget.element.style.marginLeft = "";
+
+			for (const child of this.widget.children) {
+				child.element.style.left = null;
+				child.element.style.top = null;
+				child.element.style.width = null;
+				child.element.style.height = null;
+			}
+		}
+	}
+
+	/**
+	 * Very basic QBoxLayout simulation
+	 * 
+	 * Original: https://github.com/qt/qtbase/blob/dev/src/widgets/kernel/qboxlayout.cpp
+	 */
+	class QBoxLayout extends QLayout {
+		constructor(orientation = "Qt::Horizontal") {
+			super();
+
+			this.orientation = orientation;
+		}
+
+		update() {
+			super.update();
+
+			this.widget.element.classList.add("qt-layout-box");
+			
+			if (this.orientation == "Qt::Horizontal") {
+				this.widget.element.classList.add("qt-layout-box-horizontal");
+			} else {
+				this.widget.element.classList.add("qt-layout-box-vertical");
+			}
+
+			for (const child of this.widget.children) {
+				child.element.style.width = "100%";
+				child.element.style.height = "100%";
+			}
+		}
+	}
+
+	class QVBoxLayout extends QBoxLayout {
+		constructor() {
+			super("Qt::Vertical");
+		}
+	}
+
+	class QHBoxLayout extends QBoxLayout {
+		constructor() {
+			super("Qt::Horizontal");
+		}
+	}
+
 	class QWidget {
 		constructor() {
 			this.element = document.createElement("div");
@@ -46,6 +128,10 @@
 			this._name = "";
 			this.root = false;
 			this.props = {};
+
+			this.sizePolicyHorizontal = "Qt::Preferred";
+			this.sizePolicyVertical = "Qt::Preferred";
+			this.layout = null;
 		
 			this.element.classList.add("QWidget");
 
@@ -90,11 +176,24 @@
 				...(this.root ? [
 					{name: "windowTitle", type: "string", default: "", label: "Window Title"}
 				] : [
-					{name: "x", type: "number", default: 0, label: "X"},
-					{name: "y", type: "number", default: 0, label: "Y"},
+					...(this.parent == null || this.parent.layout == null ? [
+						{name: "x", type: "number", default: 0, label: "X"},
+						{name: "y", type: "number", default: 0, label: "Y"},
+					] : []),
 				]),
-				{name: "width", type: "number", default: 100, label: "Width"},
-				{name: "height", type: "number", default: 100, label: "Height"},
+				...(this.parent == null || this.parent.layout == null ? [
+					{name: "width", type: "number", default: 100, label: "Width"},
+					{name: "height", type: "number", default: 100, label: "Height"},
+				] : []),
+			];
+		}
+		getFullDefaultProps() {
+			return [
+				...this.getDefaultProps(),
+				...(this.layout != null ? [
+					{ separator: "Layout ("+this.layout.constructor.name+")" },
+					{ name: "layoutName", type: "string", default: "", label: "Name" }
+				] : []),
 			];
 		}
 
@@ -106,6 +205,12 @@
 			this._name = newValue;
 			this.inspectorElementLabelName.textContent = this._name;
 			this.invalidateProperty("name");
+		}
+
+		setLayout(newLayout) {
+			this.layout = newLayout;
+			newLayout.widget = this;
+			this.recalculate();
 		}
 
 		free() {
@@ -274,7 +379,11 @@
 				const selectionDot = document.createElement("div");
 				selectionDot.classList.add("selection-dot");
 				selectionDot.classList.add("selection-dot-" + dot);
-				selectionDot.addEventListener("mousedown", this.selectionMouseDown.bind(this, selectionDot, change));
+				if (this.parent == null || this.parent.layout == null) {
+					selectionDot.addEventListener("mousedown", this.selectionMouseDown.bind(this, selectionDot, change));
+				} else {
+					selectionDot.classList.add("selection-disabled");
+				}
 				this._selectionElement.appendChild(selectionDot);
 
 				this['_selectionElement' + dot] = selectionDot;
@@ -323,7 +432,7 @@
 			const propertyEditorProperties = document.getElementById("propertyEditorProperties");
 			propertyEditorProperties.textContent = "";
 
-			const defaultProps = this.getDefaultProps();
+			const defaultProps = this.getFullDefaultProps();
 			for (const defaultProp of defaultProps) {
 				if (defaultProp.separator != null) {
 					const separatorElement = document.createElement("tr");
@@ -529,7 +638,7 @@
 			} else if (this.props.hasOwnProperty(name)) {
 				return this.props[name];
 			} else {
-				return this.getDefaultProps().find((x) => x.name === name).default;
+				return this.getFullDefaultProps().find((x) => x.name === name).default;
 			}
 		}
 
@@ -556,15 +665,10 @@
 			for (const child of this.children) {
 				child.recalculate();
 			}
-		}
 
-		createXMLBasicProperty(doc, name, type, value) {
-			const property = doc.createElement("property");
-			property.setAttribute("name", name);
-			const propertyValue = doc.createElement(type);
-			propertyValue.textContent = value;
-			property.appendChild(propertyValue);
-			return property;
+			if (this.layout != null) {
+				this.layout.update();
+			}
 		}
 
 		export(/** @type{XMLDocument} */ doc) {
@@ -598,7 +702,7 @@
 				property.appendChild(propertyValue);
 				properties.push(property);
 			}
-			{
+			if (this.layout === null) {
 				const property = doc.createElement("property");
 				property.setAttribute("name", "geometry");
 				const propertyValue = doc.createElement("rect");
@@ -748,10 +852,10 @@
 			const props = super.exportProperties(doc);
 			return [
 				...props,
-				this.createXMLBasicProperty(doc, "value", "number", this.value),
-				this.minimum === 0 ? null : this.createXMLBasicProperty(doc, "minimum", "number", this.minimum),
-				this.maximum === 100 ? null : this.createXMLBasicProperty(doc, "maximum", "number", this.maximum),
-				this.format === "%p%" ? null : this.createXMLBasicProperty(doc, "format", "string", this.format),
+				createXMLBasicProperty(doc, "value", "number", this.value),
+				this.minimum === 0 ? null : createXMLBasicProperty(doc, "minimum", "number", this.minimum),
+				this.maximum === 100 ? null : createXMLBasicProperty(doc, "maximum", "number", this.maximum),
+				this.format === "%p%" ? null : createXMLBasicProperty(doc, "format", "string", this.format),
 			];
 		}
 	}
@@ -845,10 +949,10 @@
 			const props = super.exportProperties(doc);
 			return [
 				...props,
-				this.frameShape === "QFrame::NoFrame" ? null : this.createXMLBasicProperty(doc, "frameShape", "enum", this.frameShape),
-				this.frameShadow === "QFrame::Plain" ? null : this.createXMLBasicProperty(doc, "frameShadow", "enum", this.frameShadow),
-				this.lineWidth === 1 ? null : this.createXMLBasicProperty(doc, "lineWidth", "number", this.lineWidth),
-				this.midLineWidth === 0 ? null : this.createXMLBasicProperty(doc, "midLineWidth", "number", this.midLineWidth),
+				this.frameShape === "QFrame::NoFrame" ? null : createXMLBasicProperty(doc, "frameShape", "enum", this.frameShape),
+				this.frameShadow === "QFrame::Plain" ? null : createXMLBasicProperty(doc, "frameShadow", "enum", this.frameShadow),
+				this.lineWidth === 1 ? null : createXMLBasicProperty(doc, "lineWidth", "number", this.lineWidth),
+				this.midLineWidth === 0 ? null : createXMLBasicProperty(doc, "midLineWidth", "number", this.midLineWidth),
 			];
 		}
 	}
@@ -948,9 +1052,9 @@
 			const props = super.exportProperties(doc);
 			return [
 				...props,
-				this.text === "" ? null : this.createXMLBasicProperty(doc, "text", "string", this.text),
-				this.createXMLBasicProperty(doc, "wordWrap", "bool", this.wordWrap),
-				this.createXMLBasicProperty(doc, "alignment", "set", this.getProp_alignment()),
+				this.text === "" ? null : createXMLBasicProperty(doc, "text", "string", this.text),
+				createXMLBasicProperty(doc, "wordWrap", "bool", this.wordWrap),
+				createXMLBasicProperty(doc, "alignment", "set", this.getProp_alignment()),
 			];
 		}
 	}
@@ -1119,18 +1223,22 @@
 			const props = super.exportProperties(doc);
 			return [
 				...props,
-				this.text === "" ? null : this.createXMLBasicProperty(doc, "text", "string", this.text),
-				this.createXMLBasicProperty(doc, "frame", "bool", this.frame),
-				this.createXMLBasicProperty(doc, "placeholderText", "string", this.placeholderText),
-				this.createXMLBasicProperty(doc, "alignment", "set", this.getProp_alignment()),
-				this.clearButtonEnabled === false ? null : this.createXMLBasicProperty(doc, "clearButtonEnabled", "bool", this.clearButtonEnabled),
-				this.echoMode === "QLineEdit::Normal" ? null : this.createXMLBasicProperty(doc, "echoMode", "set", this.echoMode),
-				this.cursorMoveStyle === "Qt::LogicalMoveStyle" ? null : this.createXMLBasicProperty(doc, "cursorMoveStyle", "set", this.cursorMoveStyle),
+				this.text === "" ? null : createXMLBasicProperty(doc, "text", "string", this.text),
+				createXMLBasicProperty(doc, "frame", "bool", this.frame),
+				createXMLBasicProperty(doc, "placeholderText", "string", this.placeholderText),
+				createXMLBasicProperty(doc, "alignment", "set", this.getProp_alignment()),
+				this.clearButtonEnabled === false ? null : createXMLBasicProperty(doc, "clearButtonEnabled", "bool", this.clearButtonEnabled),
+				this.echoMode === "QLineEdit::Normal" ? null : createXMLBasicProperty(doc, "echoMode", "set", this.echoMode),
+				this.cursorMoveStyle === "Qt::LogicalMoveStyle" ? null : createXMLBasicProperty(doc, "cursorMoveStyle", "set", this.cursorMoveStyle),
 			];
 		}
 	}
 
 	const elements = {
+		QLayout,
+		QBoxLayout,
+		QVBoxLayout,
+		QHBoxLayout,
 		QWidget,
 		QAbstractButton,
 		QPushButton,
@@ -1139,6 +1247,30 @@
 		QLabel,
 		QLineEdit,
 	};
+
+	function addLayoutFromElement(/** @type {Element} */ raw, /** @type {QWidget} */ widget) {
+		const className = raw.getAttribute("class");
+		let layoutClass = elements[className];
+		if (layoutClass === undefined) {
+			layoutClass = QVBoxLayout;
+			console.log("Unknown Qt layout class " + className);
+			if (!widgetLoadErrors.includes(className)) {
+				widgetLoadErrors.push(className);
+			}
+		}
+	
+		const childLayout = new layoutClass();
+		widget.setLayout(childLayout);
+
+		for (const child of raw.children) {
+			if (child.tagName === "property") {
+				console.log("Layout properties not implemented yet", child);
+			} else if (child.tagName === "item") {
+				const childWidget = addWidgetFromElement(child.children[0]);
+				widget.addChild(childWidget);
+			}
+		}
+	}
 
 	function addWidgetFromElement(/** @type {Element} */ raw) {
 		if (raw.tagName !== "widget") {
@@ -1153,6 +1285,7 @@
 				widgetLoadErrors.push(className);
 			}
 		}
+		/** @type {QWidget} */
 		const widget = new widgetClass();
 		widget.name = raw.getAttribute("name");
 
@@ -1162,6 +1295,8 @@
 			} else if (child.tagName === "widget") {
 				const childWidget = addWidgetFromElement(child);
 				widget.addChild(childWidget);
+			} else if (child.tagName === "layout") {
+				addLayoutFromElement(child, widget);
 			}
 		}
 
