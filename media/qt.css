@@ -46,6 +46,10 @@
     border: 1px solid var(--qt-button-border);
     border-radius: 3px;
 
+    min-width: 80px;
+
+    padding: 4px 5px;
+
     background: var(--qt-button-background);
 
     color: var(--qt-button-text);

@@ -42,8 +42,12 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
 				case 'update':
 					this.updateContent(document, e.content);
 					return;
+                case 'reload':
+                    webviewPanel.webview.html = webviewPanel.webview.html + " ";
+                    return;
 			}
 		});
+
 
         updateWebview();
     }
@@ -130,6 +134,7 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
                 <h2>New empty file</h2>
                 <button id="newFileCreateButton">Create</button>
             </div>
+            <button id="reloadButton" style="position: fixed;bottom:0;left:0;width:auto;">RELOAD</button>
             <script src="${scriptUri}"></script>
         </body>
         </html>

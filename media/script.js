@@ -27,6 +27,33 @@
 		property.appendChild(propertyValue);
 		return property;
 	}
+	function getDataFromXMLProperty(/** @type {Element} */ element) {
+		const name = element.getAttribute("name");
+		const valueRaw = element.children[0];
+		let value = null;
+
+		if (valueRaw.tagName === "rect") {
+			value = {
+				x: parseInt(valueRaw.getElementsByTagName("x")[0].textContent),
+				y: parseInt(valueRaw.getElementsByTagName("y")[0].textContent),
+				width: parseInt(valueRaw.getElementsByTagName("width")[0].textContent),
+				height: parseInt(valueRaw.getElementsByTagName("height")[0].textContent),
+			};
+		} else if (valueRaw.tagName == "sizepolicy") {
+			value = {
+				horizontal: "QSizePolicy::" + valueRaw.getAttribute("hsizetype"),
+				vertical: "QSizePolicy::" + valueRaw.getAttribute("vsizetype"),
+			};
+		} else if (valueRaw.tagName == "bool") {
+			value = valueRaw.textContent === "true";
+		} else if (valueRaw.tagName == "number") {
+			value = parseInt(valueRaw.textContent);
+		} else {
+			value = valueRaw.textContent;
+		}
+		
+		return { name, value };
+	}
 
 	function getWidgetByName(name, start) {
 		const widget = start ?? rootWidget;
@@ -61,17 +88,37 @@
 		{constant: "Qt::VisualMoveStyle", label: "Visual Move Style", description: "Pressing the left arrow key will always cause the cursor to move left, regardless of the text's writing direction. Pressing the right arrow key will always cause the cursor to move right."},
 	];
 
+	const enumSizePolicyPolicy = [
+		{constant: "QSizePolicy::Fixed", label: "Fixed", description: "The QWidget::sizeHint() is the only acceptable alternative, so the widget can never grow or shrink (e.g. the vertical direction of a push button)."},
+		{constant: "QSizePolicy::Minimum", label: "Minimum", description: "The sizeHint() is minimal, and sufficient. The widget can be expanded, but there is no advantage to it being larger (e.g. the horizontal direction of a push button). It cannot be smaller than the size provided by sizeHint()."},
+		{constant: "QSizePolicy::Maximum", label: "Maximum", description: "The sizeHint() is a maximum. The widget can be shrunk any amount without detriment if other widgets need the space (e.g. a separator line). It cannot be larger than the size provided by sizeHint()."},
+		{constant: "QSizePolicy::Preferred", label: "Preferred", description: "The sizeHint() is best, but the widget can be shrunk and still be useful. The widget can be expanded, but there is no advantage to it being larger than sizeHint() (the default QWidget policy)."},
+		{constant: "QSizePolicy::Expanding", label: "Expanding", description: "The sizeHint() is a sensible size, but the widget can be shrunk and still be useful. The widget can make use of extra space, so it should get as much space as possible (e.g. the horizontal direction of a horizontal slider)."},
+		{constant: "QSizePolicy::MinimumExpanding", label: "Minimum Expanding", description: "The sizeHint() is minimal, and sufficient. The widget can make use of extra space, so it should get as much space as possible (e.g. the horizontal direction of a horizontal slider)."},
+		{constant: "QSizePolicy::Ignored", label: "Ignored", description: "The sizeHint() is ignored. The widget will get as much space as possible."},
+	];
+
 	class QLayout {
 		constructor() {
 			/** @type {QWidget} */
 			this.widget = null;
 
-			this.name = "";
+			this.layoutName = "";
 
 			this.marginLeft = 9;
 			this.marginTop = 9;
 			this.marginRight = 9;
 			this.marginBottom = 9;
+
+			this.layoutSpacing = 6;
+
+			this.propertyNameMapping = {
+				"leftMargin": "marginLeft",
+				"topMargin": "marginTop",
+				"rightMargin": "marginRight",
+				"bottomMargin": "marginBottom",
+				"spacing": "layoutSpacing",
+			};
 		}
 
 		update() {
@@ -81,14 +128,35 @@
 				}
 			}
 			this.widget.element.classList.add("qt-layout");
-			this.widget.element.style.marginLeft = "";
+			this.widget.element.style.paddingLeft = this.marginLeft + "px";
+			this.widget.element.style.paddingRight = this.marginRight + "px";
+			this.widget.element.style.paddingTop = this.marginTop + "px";
+			this.widget.element.style.paddingBottom = this.marginBottom + "px";
+			this.widget.element.style.gap = this.layoutSpacing + "px";
 
 			for (const child of this.widget.children) {
 				child.element.style.left = null;
 				child.element.style.top = null;
+				child.element.style.minWidth = null;
+				child.element.style.minHeight = null;
 				child.element.style.width = null;
 				child.element.style.height = null;
+				child.element.style.maxWidth = null;
+				child.element.style.maxHeight = null;
+				child.element.style.flexGrow = null;
+				child.element.style.flexShrink = null;
 			}
+		}
+
+		getDefaultProps() {
+			return [
+				{ layout: true, name: "layoutName", type: "string", default: "", label: "Name" },
+				{ layout: true, name: "marginLeft", type: "number", default: 9, label: "Margin Left" },
+				{ layout: true, name: "marginTop", type: "number", default: 9, label: "Margin Top" },
+				{ layout: true, name: "marginRight", type: "number", default: 9, label: "Margin Right" },
+				{ layout: true, name: "marginBottom", type: "number", default: 9, label: "Margin Bottom" },
+				{ layout: true, name: "layoutSpacing", type: "number", default: 6, label: "Spacing" },
+			];
 		}
 	}
 
@@ -116,8 +184,50 @@
 			}
 
 			for (const child of this.widget.children) {
-				child.element.style.width = "100%";
-				child.element.style.height = "100%";
+				const policy = child.sizePolicy();
+				const sizeHint = child.sizeHint();
+				const size = {
+					width: sizeHint.width,
+					height: sizeHint.height,
+				};
+				for (const e of [
+					{policy: policy.horizontal, normal: "width", min: "minWidth", max: "maxWidth", hint: size.width, main: this.orientation == "Qt::Horizontal"},
+					{policy: policy.vertical, normal: "height", min: "minHeight", max: "maxHeight", hint: size.height, main: this.orientation == "Qt::Vertical"},
+				]) {
+					if (e.policy == "QSizePolicy::Fixed") {
+						child.element.style[e.normal] = e.hint + "px";
+						if (e.main) {
+							child.element.style.flexShrink = "0";
+							child.element.style.flexGrow = "0";
+						}
+					} else if (e.policy == "QSizePolicy::Minimum") {
+						child.element.style[e.min] = e.hint + "px";
+						if (e.main) {
+							child.element.style.flexShrink = "0";
+							child.element.style.flexGrow = "1";
+						}
+					} else if (e.policy == "QSizePolicy::Maximum") {
+						child.element.style[e.max] = e.hint + "px";
+						if (e.main) {
+							child.element.style.flexShrink = "0";
+						}
+					} else if (e.policy == "QSizePolicy::Preferred") {
+						if (e.main) {
+							child.element.style.flexGrow = "1";
+							child.element.style.flexShrink = "0";
+						}
+					} else if (e.policy == "QSizePolicy::Expanding") {
+						child.element.style[e.normal] = "100%";
+					} else if (e.policy == "QSizePolicy::MinimumExpanding") {
+						child.element.style[e.min] = e.hint + "px";
+						child.element.style[e.normal] = "100%";
+					} else if (e.policy == "QSizePolicy::Ignored") {
+						if (e.main) {
+							child.element.style.flexShrink = "1";
+							child.element.style.flexGrow = "1";
+						}
+					}
+				}
 			}
 		}
 	}
@@ -138,13 +248,14 @@
 		constructor() {
 			this.element = document.createElement("div");
 			this.parent = null;
+			/** @type {QWidget[]} */
 			this.children = [];
 			this._name = "";
 			this.root = false;
 			this.props = {};
 
-			this.sizePolicyHorizontal = "Qt::Preferred";
-			this.sizePolicyVertical = "Qt::Preferred";
+			this.sizePolicyHorizontal = null;
+			this.sizePolicyVertical = null;
 			this.layout = null;
 		
 			this.element.classList.add("QWidget");
@@ -183,6 +294,34 @@
 			this._propertyEditorProperties = {};
 		}
 
+		defaultSizePolicy() {
+			return {
+				horizontal: "QSizePolicy::Preferred",
+				vertical: "QSizePolicy::Preferred",
+			};
+		}
+
+		sizePolicy() {
+			return {
+				horizontal: this.sizePolicyHorizontal ?? this.defaultSizePolicy().horizontal,
+				vertical: this.sizePolicyVertical ?? this.defaultSizePolicy().vertical,
+			};
+		}
+
+		sizeHint() {
+			const cloned = this.element.cloneNode(true);
+			document.body.appendChild(cloned);
+			cloned.style.position = "absolute";
+			cloned.style.width = "fit-content";
+			cloned.style.height = "fit-content";
+			const rect = cloned.getBoundingClientRect();
+			cloned.remove();
+			return {
+				width: rect.width,
+				height: rect.height
+			};
+		}
+
 		getDefaultProps() {
 			return [
 				{ separator: "QWidget" },
@@ -198,7 +337,10 @@
 				...(this.parent == null || this.parent.layout == null ? [
 					{name: "width", type: "number", default: 100, label: "Width"},
 					{name: "height", type: "number", default: 100, label: "Height"},
-				] : []),
+				] : [
+					{name: "sizePolicyHorizontal", type: "enum", default: this.defaultSizePolicy().horizontal, label: "Size Policy Horizontal", options: enumSizePolicyPolicy},
+					{name: "sizePolicyVertical", type: "enum", default: this.defaultSizePolicy().vertical, label: "Size Policy Vertical", options: enumSizePolicyPolicy},
+				]),
 			];
 		}
 		getFullDefaultProps() {
@@ -206,7 +348,7 @@
 				...this.getDefaultProps(),
 				...(this.layout != null ? [
 					{ separator: "Layout ("+this.layout.constructor.name+")" },
-					{ name: "layoutName", type: "string", default: "", label: "Name" }
+					...this.layout.getDefaultProps(),
 				] : []),
 			];
 		}
@@ -474,7 +616,19 @@
 
 				const propertyEditorProperty = {
 					type: defaultProp.type,
+					layout: defaultProp.layout === true,
 				};
+
+				const set = (value) => {
+					if (propertyEditorProperty.layout) {
+						this.layout[defaultProp.name] = value;
+						this.layout.update();
+					} else {
+						this.setProperty(defaultProp.name, value);
+					}
+					save();
+				};
+
 				if (defaultProp.type == "string" || defaultProp.type == "number") {
 					const input = document.createElement("input");
 					input.type = {
@@ -486,8 +640,7 @@
 						if (defaultProp.type === "number") {
 							newValue = parseInt(newValue);
 						}
-						this.setProperty(defaultProp.name, newValue);
-						save();
+						set(newValue);
 					});
 					propValueElement.appendChild(input);
 					propertyEditorProperty.input = input;
@@ -504,8 +657,7 @@
 					}
 					select.addEventListener("change", () => {
 						let newValue = select.value;
-						this.setProperty(defaultProp.name, newValue);
-						save();
+						set(newValue);
 					});
 					propValueElement.appendChild(select);
 					propertyEditorProperty.input = select;
@@ -513,8 +665,7 @@
 					const input = document.createElement("input");
 					input.type = "checkbox";
 					input.addEventListener("change", () => {
-						this.setProperty(defaultProp.name, input.checked);
-						save();
+						set(input.checked);
 					});
 					propValueElement.appendChild(input);
 					propertyEditorProperty.input = input;
@@ -536,10 +687,16 @@
 			if (propertyEditorItem == null) {
 				return;
 			}
-			if (propertyEditorItem.type == "bool") {
-				propertyEditorItem.input.checked = this.getProperty(name);
+			let value = null;
+			if (propertyEditorItem.layout) {
+				value = this.layout[name];
 			} else {
-				propertyEditorItem.input.value = this.getProperty(name);
+				value = this.getProperty(name);
+			}
+			if (propertyEditorItem.type == "bool") {
+				propertyEditorItem.input.checked = value;
+			} else {
+				propertyEditorItem.input.value = value;
 			}
 
 		}
@@ -590,6 +747,16 @@
 		setProp_name(name) {
 			this.name = name;
 		}
+		setProp_sizePolicyHorizontal(value) {
+			this.sizePolicyHorizontal = value;
+			this.parent?.recalculate();
+			this._updateSelection();
+		}
+		setProp_sizePolicyVertical(value) {
+			this.sizePolicyVertical = value;
+			this.parent?.recalculate();
+			this._updateSelection();
+		}
 
 		getProp_x() {
 			return this.getPosition().x;
@@ -606,6 +773,12 @@
 		getProp_name() {
 			return this.name;
 		}
+		getProp_sizePolicyHorizontal() {
+			return this.sizePolicy().horizontal;
+		}
+		getProp_sizePolicyVertical() {
+			return this.sizePolicy().vertical;
+		}
 		/******************/
 
 		setProp_geometry(value) {
@@ -613,26 +786,14 @@
 			this.setSize(value.width, value.height);
 		}
 
+		setProp_sizePolicy(value) {
+			this.sizePolicyHorizontal = value.horizontal;
+			this.sizePolicyVertical = value.vertical;
+			this.recalculate();
+		}
+
 		setPropertyFromElement(/** @type {Element} */ element) {
-			const name = element.getAttribute("name");
-			const valueRaw = element.children[0];
-			let value = null;
-
-			if (valueRaw.tagName === "rect") {
-				value = {
-					x: parseInt(valueRaw.getElementsByTagName("x")[0].textContent),
-					y: parseInt(valueRaw.getElementsByTagName("y")[0].textContent),
-					width: parseInt(valueRaw.getElementsByTagName("width")[0].textContent),
-					height: parseInt(valueRaw.getElementsByTagName("height")[0].textContent),
-				};
-			} else if (valueRaw.tagName == "bool") {
-				value = valueRaw.textContent === "true";
-			} else if (valueRaw.tagName == "number") {
-				value = parseInt(valueRaw.textContent);
-			} else {
-				value = valueRaw.textContent;
-			}
-
+			const { name, value } = getDataFromXMLProperty(element);
 			this.setProperty(name, value);
 		}
 
@@ -758,6 +919,13 @@
 
 			this.textElement = document.createElement("span");
 			this.element.appendChild(this.textElement);
+		}
+
+		defaultSizePolicy() {
+			return {
+				horizontal: "QSizePolicy::Minimum",
+				vertical: "QSizePolicy::Fixed",
+			};
 		}
 
 		getDefaultProps() {
@@ -1104,6 +1272,13 @@
 			this.updateDisplay();
 		}
 
+		sizeHint() {
+			return {
+				width: 125,
+				height: 24
+			};
+		}
+
 		getDefaultProps() {
 			return [
 				...super.getDefaultProps(),
@@ -1281,11 +1456,17 @@
 		}
 	
 		const childLayout = new layoutClass();
+		if (raw.hasAttribute("name")) {
+			childLayout.layoutName = raw.getAttribute("name");
+		}
 		widget.setLayout(childLayout);
 
 		for (const child of raw.children) {
 			if (child.tagName === "property") {
-				console.log("Layout properties not implemented yet", child);
+				const { name, value } = getDataFromXMLProperty(child);
+				if (childLayout.propertyNameMapping[name] != null) {
+					childLayout[childLayout.propertyNameMapping[name]] = value;
+				}
 			} else if (child.tagName === "item") {
 				const childWidget = addWidgetFromElement(child.children[0]);
 				widget.addChild(childWidget);
@@ -1574,6 +1755,10 @@
 		rootWidget.setAsRoot();
 		setCurrentSelection(rootWidget);
 		save();
+	});
+
+	document.getElementById("reloadButton").addEventListener("click", () => {
+		vscode.postMessage({type: 'reload'});
 	});
 
 	loadWidgetBox();
