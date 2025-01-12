@@ -1459,6 +1459,7 @@
 				}
 			}
 			rootWidget.addChild(widget);
+			setCurrentSelection(widget);
 			save();
 		}
 
