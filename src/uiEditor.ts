@@ -87,9 +87,10 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
                 <a class="warning-link" href="https://github.com/chocolateimage/qt-ui-editor/issues/new">Submit issue...</a>
             </div>
             <div class="root" style="display: none;">
+                <button class="side-collapsed-sidebar" style="display: none;">Widget Box</button>
                 <div class="sidebar sidebar-left">
                     <div class="view">
-                        <button class="view-title">Widget Box</button>
+                        <button class="view-title side-collapsible">Widget Box</button>
                         <div class="view-content">
                             <div id="widgetBoxList">
 
@@ -101,7 +102,7 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
                 </div>
                 <div class="sidebar sidebar-right">
                     <div class="view">
-                        <button class="view-title">Object Inspector</button>
+                        <button class="view-title collapsible">Object Inspector</button>
                         <div class="view-content">
                             <ul id="objectInspectorRoot">
 
@@ -109,7 +110,7 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
                         </div>
                     </div>
                     <div class="view">
-                        <button class="view-title">Property Editor</button>
+                        <button class="view-title collapsible">Property Editor</button>
                         <div class="view-content">
                             <table id="propertyEditorTable">
                                 <thead>

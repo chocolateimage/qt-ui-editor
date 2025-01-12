@@ -1494,11 +1494,20 @@
 		}
 	});
 
-	for (const element of document.getElementsByClassName("view-title")) {
+	for (const element of document.querySelectorAll(".view-title.collapsible")) {
 		element.addEventListener("click", () => {
 			element.parentElement.querySelector(".view-content").classList.toggle("view-content-hidden");
 		});
 	}
+
+	document.querySelector(".side-collapsible").addEventListener("click", () => {
+		document.querySelector(".sidebar-left").style.display = "none";
+		document.querySelector(".side-collapsed-sidebar").style.display = null;
+	});
+	document.querySelector(".side-collapsed-sidebar").addEventListener("click", () => {
+		document.querySelector(".sidebar-left").style.display = null;
+		document.querySelector(".side-collapsed-sidebar").style.display = "none";
+	});
 
 	window.addEventListener("keydown", (event) => {
 		if (event.target.tagName == "INPUT") {

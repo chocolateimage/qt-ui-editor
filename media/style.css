@@ -89,6 +89,31 @@ body {
     display: none;
 }
 
+.side-collapsed-sidebar {
+    align-self: start;
+
+    border-bottom: 1px solid var(--vscode-sideBarSectionHeader-border) !important;
+    border-left: none !important;
+    border-right: 1px solid var(--vscode-sideBarSectionHeader-border) !important;
+    border-top: 1px solid var(--vscode-sideBarSectionHeader-border) !important;
+
+    width: auto;
+
+    padding: 12px 6px !important;
+
+    background: var(--vscode-sideBarSectionHeader-background) !important;
+
+    font-size: 11px !important;
+    font-weight: bold;
+    text-align: left;
+    text-transform: uppercase;
+    color: var(--vscode-sideBarSectionHeader-foreground) !important;
+
+    writing-mode: vertical-lr;
+    outline: none !important;
+    user-select: none;
+}
+
 .dragging {
     z-index: 100 !important;
 
