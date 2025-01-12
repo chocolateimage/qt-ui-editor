@@ -25,7 +25,31 @@
         ],
         "priority": "default"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Qt UI Editor",
+      "properties": {
+        "qtUiEditor.pythonQt": {
+          "type": "string",
+          "description": "The version of Qt for Python to use for generating .py UI files",
+          "default": "none",
+          "enum": [
+            "none",
+            "pyqt5",
+            "pyqt6",
+            "pyside2",
+            "pyside6"
+          ],
+          "enumDescriptions": [
+            "Do not generate .py files",
+            "Uses pyuic5",
+            "Uses pyuic6",
+            "Uses pyside2-uic",
+            "Uses pyside6-uic"
+          ]
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

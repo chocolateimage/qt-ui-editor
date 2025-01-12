@@ -1,4 +1,7 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import * as child_process from 'child_process';
 
 export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
     public static register(context: vscode.ExtensionContext): vscode.Disposable {
@@ -31,10 +34,39 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
 				updateWebview();
 			}
 		});
+        const saveDocumentSubscription = vscode.workspace.onDidSaveTextDocument(e => {
+            if (e.uri.toString() === document.uri.toString()) {
+                const config = vscode.workspace.getConfiguration("qtUiEditor", document);
+                const pythonQt = config.get("pythonQt","none");
+                if (pythonQt == "none") {
+                    return;
+                }
+                const directory = path.dirname(e.fileName);
+                const originalName = path.basename(e.fileName);
+                const compiledName = originalName.replaceAll(".ui","_Ui.py");
+                const generationTool = {
+                    "pyqt5": "pyuic5",
+                    "pyqt6": "pyuic6",
+                    "pyside2": "pyside2-uic",
+                    "pyside6": "pyside6-uic",
+                }[pythonQt];
+                child_process.execFile(generationTool, [originalName, "-o", compiledName], {cwd: directory}, (error, stdout, stderr) => {
+                    if (error) {
+                        if (error.code == "ENOENT") {
+                            vscode.window.showErrorMessage("Error generating .py file using "+pythonQt+": You do not have the development tools installed");
+                        } else {
+                            vscode.window.showErrorMessage("Error generating .py file using "+pythonQt+": " + error.message);
+                        }
+                    }
+                    console.log(stdout + stderr);
+                });
+            }
+        });
 
 		// Make sure we get rid of the listener when our editor is closed.
 		webviewPanel.onDidDispose(() => {
 			changeDocumentSubscription.dispose();
+            saveDocumentSubscription.dispose();
 		});
 
         webviewPanel.webview.onDidReceiveMessage(e => {
