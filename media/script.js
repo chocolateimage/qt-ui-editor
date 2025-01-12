@@ -158,6 +158,16 @@
 				{ layout: true, name: "layoutSpacing", type: "number", default: 6, label: "Spacing" },
 			];
 		}
+
+		exportProperties(doc) {
+			return [
+				createXMLBasicProperty(doc, "leftMargin", "number", this.marginLeft),
+				createXMLBasicProperty(doc, "topMargin", "number", this.marginTop),
+				createXMLBasicProperty(doc, "rightMargin", "number", this.marginRight),
+				createXMLBasicProperty(doc, "bottomMargin", "number", this.marginBottom),
+				createXMLBasicProperty(doc, "spacing", "number", this.layoutSpacing),
+			];
+		}
 	}
 
 	/**
@@ -857,8 +867,28 @@
 				}
 				element.appendChild(property);
 			}
+			let layoutElement = null;
+			if (this.layout != null) {
+				layoutElement = doc.createElement("layout");
+				layoutElement.setAttribute("class", this.layout.constructor.name);
+				if (this.layout.name != "") {
+					layoutElement.setAttribute("name", this.layout.name);
+				}
+				const layoutProperties = this.layout.exportProperties(doc);
+				for (const property of layoutProperties) {
+					layoutElement.appendChild(property);
+				}
+				element.appendChild(layoutElement);
+			}
+
 			for (const child of this.children) {
-				element.appendChild(child.export(doc));
+				if (this.layout != null) {
+					const itemElement = doc.createElement("item");
+					itemElement.appendChild(child.export(doc));
+					layoutElement.appendChild(itemElement);
+				} else {
+					element.appendChild(child.export(doc));
+				}
 			}
 			return element;
 		}
@@ -877,7 +907,7 @@
 				property.appendChild(propertyValue);
 				properties.push(property);
 			}
-			if (this.layout === null) {
+			if (this.parent == null || this.parent.layout === null) {
 				const property = doc.createElement("property");
 				property.setAttribute("name", "geometry");
 				const propertyValue = doc.createElement("rect");
@@ -895,6 +925,20 @@
 				propertyValue.appendChild(y);
 				propertyValue.appendChild(width);
 				propertyValue.appendChild(height);
+				property.appendChild(propertyValue);
+				properties.push(property);
+			} else if (this.sizePolicyHorizontal != null && this.sizePolicyVertical != null) {
+				const property = doc.createElement("property");
+				property.setAttribute("name", "sizePolicy");
+				const propertyValue = doc.createElement("sizepolicy");
+				propertyValue.setAttribute("hsizetype", this.sizePolicyHorizontal.split(":").pop());
+				propertyValue.setAttribute("vsizetype", this.sizePolicyVertical.split(":").pop());
+				const horstretch = doc.createElement("horstretch");
+				const verstretch = doc.createElement("verstretch");
+				horstretch.textContent = 0;
+				verstretch.textContent = 0;
+				propertyValue.appendChild(horstretch);
+				propertyValue.appendChild(verstretch);
 				property.appendChild(propertyValue);
 				properties.push(property);
 			}
