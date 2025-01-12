@@ -1469,7 +1469,7 @@
 
 	function loadWidgetBox() {
 		addToWidgetBox(QWidget, "Widget", "widgets/widget.png", "widget", 120, 80);
-		addToWidgetBox(QFrame, "Frame", "widgets/frame.png", "frame", 120, 80);
+		addToWidgetBox(QFrame, "Frame", "widgets/frame.png", "frame", 120, 80, {frameShape: "QFrame::StyledPanel", frameShadow: "QFrame::Raised"});
 		addToWidgetBox(QLabel, "Label", "widgets/label.png", "label", 64, 16, {text: "TextLabel"});
 		addToWidgetBox(QPushButton, "Push Button", "widgets/pushbutton.png", "pushButton", 80, 24, {text: "PushButton"});
 		addToWidgetBox(QProgressBar, "Progress Bar", "widgets/progress.png", "progressBar", 118, 23, {value: 24});
