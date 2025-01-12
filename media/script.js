@@ -1027,6 +1027,20 @@
 			this.format = "%p%";
 		}
 
+		sizeHint() {
+			return {
+				width: 91,
+				height: 24,
+			};
+		}
+
+		defaultSizePolicy() {
+			return {
+				horizontal: "QSizePolicy::Expanding",
+				vertical: "QSizePolicy::Fixed",
+			};
+		}
+
 		getDefaultProps() {
 			return [
 				...super.getDefaultProps(),
@@ -1320,6 +1334,13 @@
 			return {
 				width: 125,
 				height: 24
+			};
+		}
+
+		defaultSizePolicy() {
+			return {
+				horizontal: "QSizePolicy::Minimum",
+				vertical: "QSizePolicy::Fixed",
 			};
 		}
 
