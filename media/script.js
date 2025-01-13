@@ -69,6 +69,13 @@
 		return null;
 	}
 
+	function updateSelectionPosition() {
+		if (currentSelection == null) {
+			return;
+		}
+		currentSelection._updateSelection();
+	}
+
 	const enumAlignmentHorizontal = [
 		{constant: "Qt::AlignLeft", label: "Left"},
 		{constant: "Qt::AlignHCenter", label: "Center"},
@@ -1751,10 +1758,12 @@
 	document.querySelector(".side-collapsible").addEventListener("click", () => {
 		document.querySelector(".sidebar-left").style.display = "none";
 		document.querySelector(".side-collapsed-sidebar").style.display = null;
+		updateSelectionPosition();
 	});
 	document.querySelector(".side-collapsed-sidebar").addEventListener("click", () => {
 		document.querySelector(".sidebar-left").style.display = null;
 		document.querySelector(".side-collapsed-sidebar").style.display = "none";
+		updateSelectionPosition();
 	});
 
 	window.addEventListener("keydown", (event) => {
