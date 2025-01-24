@@ -311,6 +311,19 @@
 			this._propertyEditorProperties = {};
 		}
 
+		addBasicPropGetterSetters(props, afterChange) {
+			for (const prop of props) {
+				this['getProp_' + prop] = () => {
+					return this[prop];
+				};
+				this['setProp_' + prop] = (newValue) => {
+					this[prop] = newValue;
+					afterChange.bind(this)();
+					this.invalidateProperty(prop);
+				};
+			}
+		}
+
 		defaultSizePolicy() {
 			return {
 				horizontal: "QSizePolicy::Preferred",
@@ -1502,6 +1515,168 @@
 		}
 	}
 
+	class QAbstractSpinBox extends QWidget {
+		constructor() {
+			super();
+			this.element.classList.add("QAbstractSpinBox");
+
+			this.contentElement = document.createElement("div");
+			this.contentElement.classList.add("QAbstractSpinBox-content");
+			this.buttonsElement = document.createElement("div");
+			this.buttonsElement.classList.add("QAbstractSpinBox-buttons");
+			this.buttonsTopElement = document.createElement("div");
+			this.buttonsTopElement.classList.add("QAbstractSpinBox-buttons-top");
+			this.buttonsBottomElement = document.createElement("div");
+			this.buttonsBottomElement.classList.add("QAbstractSpinBox-buttons-bottom");
+
+
+			this.buttonsElement.appendChild(this.buttonsTopElement);
+			this.buttonsElement.appendChild(this.buttonsBottomElement);
+			this.element.appendChild(this.contentElement);
+			this.element.appendChild(this.buttonsElement);
+
+			this.frame = true;
+			this.alignmentHorizontal = "Qt::AlignLeft";
+			this.alignmentVertical = "Qt::AlignVCenter";
+			this.readOnly = false;
+
+			this.addBasicPropGetterSetters(["frame", "alignmentHorizontal", "alignmentVertical", "readOnly"], this.updateDisplay);
+		}
+
+		getDefaultProps() {
+			return [
+				...super.getDefaultProps(),
+				{ separator: "QAbstractSpinBox" },
+				{ name: "frame", type: "bool", default: true, label: "Frame" },
+				{ name: "alignmentHorizontal", type: "enum", default: "Qt::AlignLeft", label: "Alignment Horizontal", options: enumAlignmentHorizontal },
+				{ name: "alignmentVertical", type: "enum", default: "Qt::AlignVCenter", label: "Alignment Vertical", options: enumAlignmentVertical },
+				{ name: "readOnly", type: "bool", default: false, label: "Read Only" },
+			];
+		}
+
+		updateDisplay() {
+			this.contentElement.textContent = this.getDisplayValue();
+			if (this.canGoUp() && !this.readOnly) {
+				this.buttonsTopElement.classList.remove("QAbstractSpinBox-buttons-top-disabled");
+			} else {
+				this.buttonsTopElement.classList.add("QAbstractSpinBox-buttons-top-disabled");
+			}
+			if (this.canGoDown() && !this.readOnly) {
+				this.buttonsBottomElement.classList.remove("QAbstractSpinBox-buttons-bottom-disabled");
+			} else {
+				this.buttonsBottomElement.classList.add("QAbstractSpinBox-buttons-bottom-disabled");
+			}
+	
+			if (this.alignmentHorizontal == "Qt::AlignLeft" || this.alignmentHorizontal == "Qt::AlignJustify") {
+				this.contentElement.style.justifyContent = "left";
+				this.contentElement.style.textAlign = "left";
+			} else if (this.alignmentHorizontal == "Qt::AlignHCenter") {
+				this.contentElement.style.justifyContent = "center";
+				this.contentElement.style.textAlign = "center";
+			} else if (this.alignmentHorizontal == "Qt::AlignRight") {
+				this.contentElement.style.justifyContent = "right";
+				this.contentElement.style.textAlign = "right";
+			}
+			if (this.alignmentVertical == "Qt::AlignTop") {
+				this.contentElement.style.alignItems = "start";
+			} else if (this.alignmentVertical == "Qt::AlignVCenter" || this.alignmentVertical == "Qt::AlignBaseline") {
+				this.contentElement.style.alignItems = "center";
+			} else if (this.alignmentVertical == "Qt::AlignBottom") {
+				this.contentElement.style.alignItems = "end";
+			}
+
+			if (this.frame) {
+				this.element.classList.remove("QAbstractSpinBox-noframe");
+			} else {
+				this.element.classList.add("QAbstractSpinBox-noframe");
+			}
+		}
+
+		getDisplayValue() {
+			return "";
+		}
+
+		setProp_alignment(value) {
+			for (const item of value.split("|")) {
+				if (enumAlignmentHorizontal.find((x) => x.constant == item) != null) {
+					this.alignmentHorizontal = item;
+				} else if (enumAlignmentVertical.find((x) => x.constant == item) != null) {
+					this.alignmentVertical = item;
+				}
+			}
+			this.updateDisplay();
+		}
+		getProp_alignment() {
+			return `${this.alignmentHorizontal}|${this.alignmentVertical}`;
+		}
+
+		exportProperties(doc) {
+			const props = super.exportProperties(doc);
+			return [
+				...props,
+				this.frame == true ? null : createXMLBasicProperty(doc, "frame", "bool", this.frame),
+				this.readOnly == false ? null : createXMLBasicProperty(doc, "readOnly", "bool", this.readOnly),
+				createXMLBasicProperty(doc, "alignment", "set", this.getProp_alignment()),
+			];
+		}
+	}
+
+	class QSpinBox extends QAbstractSpinBox {
+		constructor() {
+			super();
+			this.element.classList.add("QSpinBox");
+
+			this.prefix = "";
+			this.suffix = "";
+			this.minimum = 0;
+			this.maximum = 99;
+			this.value = 0;
+			this.displayIntegerBase = 10;
+
+			this.addBasicPropGetterSetters(["prefix", "suffix", "minimum", "maximum", "value", "displayIntegerBase"], this.updateDisplay);
+
+			this.updateDisplay();
+		}
+
+		getDefaultProps() {
+			return [
+				...super.getDefaultProps(),
+				{ separator: "QSpinBox" },
+				{ name: "prefix", type: "string", default: "", label: "Prefix" },
+				{ name: "suffix", type: "string", default: "", label: "Suffix" },
+				{ name: "minimum", type: "number", default: 0, label: "Minimum" },
+				{ name: "maximum", type: "number", default: 99, label: "Maximum" },
+				{ name: "value", type: "number", default: 0, label: "Value" },
+				{ name: "singleStep", type: "number", default: 1, label: "Single Step" },
+				{ name: "displayIntegerBase", type: "number", default: 10, label: "Display Integer Base" },
+			];
+		}
+
+		getDisplayValue() {
+			return this.prefix + this.value.toString(this.displayIntegerBase) + this.suffix;
+		}
+
+		canGoDown() {
+			return this.value > this.minimum;
+		}
+		canGoUp() {
+			return this.value < this.maximum;
+		}
+
+		exportProperties(doc) {
+			const props = super.exportProperties(doc);
+			return [
+				...props,
+				this.prefix === "" ? null : createXMLBasicProperty(doc, "prefix", "string", this.prefix),
+				this.suffix === "" ? null : createXMLBasicProperty(doc, "suffix", "string", this.suffix),
+				this.minimum === 0 ? null : createXMLBasicProperty(doc, "minimum", "number", this.minimum),
+				this.maximum === 99 ? null : createXMLBasicProperty(doc, "maximum", "number", this.maximum),
+				this.value === 0 ? null : createXMLBasicProperty(doc, "value", "number", this.value),
+				this.displayIntegerBase === 10 ? null : createXMLBasicProperty(doc, "displayIntegerBase", "number", this.displayIntegerBase),
+			];
+		}
+	}
+
 	const elements = {
 		QLayout,
 		QBoxLayout,
@@ -1514,6 +1689,8 @@
 		QFrame,
 		QLabel,
 		QLineEdit,
+		QAbstractSpinBox,
+		QSpinBox,
 	};
 
 	function addLayoutFromElement(/** @type {Element} */ raw, /** @type {QWidget} */ widget) {
@@ -1727,6 +1904,7 @@
 		addToWidgetBox(QLabel, "Label", "widgets/label.png", "label", 64, 16, {text: "TextLabel"});
 		addToWidgetBox(QPushButton, "Push Button", "widgets/pushbutton.png", "pushButton", 80, 24, {text: "PushButton"});
 		addToWidgetBox(QLineEdit, "Line Edit", "widgets/lineedit.png", "lineEdit", 113, 20);
+		addToWidgetBox(QSpinBox, "Spin Box", "widgets/spinbox.png", "spinBox", 42, 22);
 		addToWidgetBox(QProgressBar, "Progress Bar", "widgets/progress.png", "progressBar", 118, 23, {value: 24});
 	}
 
