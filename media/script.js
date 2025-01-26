@@ -1725,7 +1725,7 @@
 
 	function addWidgetFromElement(/** @type {Element} */ raw) {
 		if (raw.tagName !== "widget") {
-			throw Error("Widget isn't a \"widget\" type");
+			throw Error("Widget isn't a \"widget\" type but \""+raw.tagName+"\"");
 		}
 		const className = raw.getAttribute("class");
 		let widgetClass = elements[className];
@@ -1761,13 +1761,20 @@
 	}
 
     function updateContent(/** @type {string} */ text) {
+		document.getElementById("generalLoadError").classList.remove("show");
 		if (text == "") {
 			document.querySelector(".root").style.display = "none";
 			document.querySelector(".new-file").style.display = null;
 		} else {
 			document.querySelector(".new-file").style.display = "none";
 			document.querySelector(".root").style.display = null;
-			loadExistingContent(text);
+			try {
+				loadExistingContent(text);
+			} catch (error) {
+				document.getElementById("generalLoadError").classList.add("show");
+				document.getElementById("generalLoadErrorText").textContent = error;
+				console.error(error);
+			}
 		}
 	}
 	function loadExistingContent(/** @type {string} */ text) {

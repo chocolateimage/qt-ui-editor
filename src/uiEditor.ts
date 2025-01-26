@@ -116,11 +116,15 @@ export class QtUIEditorProvider implements vscode.CustomTextEditorProvider {
             <title>UI Editor</title>
         </head>
         <body>
-            <div class="warning" id="warningWidgetLoadError">
-                <span class="warning-text">
+            <div class="alert warning" id="warningWidgetLoadError">
+                <span class="alert-text">
                     The following widgets could not be loaded: <span id="warningWidgetLoadErrorWidgets"></span>
                 </span>
-                <a class="warning-link" href="https://github.com/chocolateimage/qt-ui-editor/issues/new">Submit issue...</a>
+                <a class="alert-link" href="https://github.com/chocolateimage/qt-ui-editor/issues/new">Submit issue...</a>
+            </div>
+            <div class="alert error" id="generalLoadError">
+                <span class="alert-text" id="generalLoadErrorText"></span>
+                <a class="alert-link" href="https://github.com/chocolateimage/qt-ui-editor/issues/new">Submit issue...</a>
             </div>
             <div class="root" style="display: none;">
                 <button class="side-collapsed-sidebar" style="display: none;">Widget Box</button>

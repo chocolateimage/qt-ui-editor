@@ -263,24 +263,34 @@ body {
     user-select: none;
 }
 
-.warning {
+.alert {
     display: none;
 
-    border: 1px solid var(--vscode-inputValidation-warningBorder);
-
     padding: 8px 16px;
+}
+
+.alert.show {
+    display: flex;
+}
+
+.alert-link {
+    margin-left: auto;
+}
+
+.alert.warning {
+    border: 1px solid var(--vscode-inputValidation-warningBorder);
 
     background-color: var(--vscode-inputValidation-warningBackground);
 
     color: var(--vscode-inputValidation-warningForeground);
 }
 
-.warning.show {
-    display: flex;
-}
+.alert.error {
+    border: 1px solid var(--vscode-inputValidation-errorBorder);
 
-.warning-link {
-    margin-left: auto;
+    background-color: var(--vscode-inputValidation-errorBackground);
+
+    color: var(--vscode-inputValidation-errorForeground);
 }
 
 .new-file {
