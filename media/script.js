@@ -48,6 +48,8 @@
 			value = valueRaw.textContent === "true";
 		} else if (valueRaw.tagName == "number") {
 			value = parseInt(valueRaw.textContent);
+		} else if (valueRaw.tagName == "double") {
+			value = parseFloat(valueRaw.textContent);
 		} else {
 			value = valueRaw.textContent;
 		}
@@ -659,16 +661,22 @@
 					save();
 				};
 
-				if (defaultProp.type == "string" || defaultProp.type == "number") {
+				if (defaultProp.type == "string" || defaultProp.type == "number" || defaultProp.type == "double") {
 					const input = document.createElement("input");
 					input.type = {
 						"string": "text",
-						"number": "number"
+						"number": "number",
+						"double": "number"
 					}[defaultProp.type];
+					if (defaultProp.type === "double") {
+						input.step = "any";
+					}
 					input.addEventListener("change", () => {
 						let newValue = input.value;
 						if (defaultProp.type === "number") {
 							newValue = parseInt(newValue);
+						} else if (defaultProp.type === "double") {
+							newValue = parseFloat(newValue);
 						}
 						set(newValue);
 					});
@@ -916,9 +924,15 @@
 		exportProperties(/** @type{XMLDocument} */ doc) {
 			const properties = [];
 			for (const [key, value] of Object.entries(this.props)) {
+				const defaultProp = this.getDefaultProps().find((prop) => prop.name == key);
 				const property = doc.createElement("property");
 				property.setAttribute("name", key);
 				let type = typeof value;
+				if (defaultProp != null) {
+					if (defaultProp.type != null) {
+						type = defaultProp.type;
+					}
+				}
 				if (type == "boolean") {
 					type = "bool";
 				}
@@ -1516,6 +1530,11 @@
 	}
 
 	class QAbstractSpinBox extends QWidget {
+		static enumStepType = [
+			{ constant: "QAbstractSpinBox::DefaultStepType", label: "Default", description: "Step Single Step (default 1) when pressing the buttons" },
+			{ constant: "QAbstractSpinBox::AdaptiveDecimalStepType", label: "Adaptive Decimal", description: "Step 10^-Decimals (one decimal point) when pressing the buttons" },
+		];
+
 		constructor() {
 			super();
 			this.element.classList.add("QAbstractSpinBox");
@@ -1547,10 +1566,13 @@
 			return [
 				...super.getDefaultProps(),
 				{ separator: "QAbstractSpinBox" },
+				{ name: "wrapping", type: "bool", default: false, label: "Wrapping" },
 				{ name: "frame", type: "bool", default: true, label: "Frame" },
 				{ name: "alignmentHorizontal", type: "enum", default: "Qt::AlignLeft", label: "Alignment Horizontal", options: enumAlignmentHorizontal },
 				{ name: "alignmentVertical", type: "enum", default: "Qt::AlignVCenter", label: "Alignment Vertical", options: enumAlignmentVertical },
 				{ name: "readOnly", type: "bool", default: false, label: "Read Only" },
+				{ name: "accelerated", type: "bool", default: false, label: "Accelerated" },
+				{ name: "keyboardTracking", type: "bool", default: false, label: "Keyboard Tracking" },
 			];
 		}
 
@@ -1648,6 +1670,7 @@
 				{ name: "maximum", type: "number", default: 99, label: "Maximum" },
 				{ name: "value", type: "number", default: 0, label: "Value" },
 				{ name: "singleStep", type: "number", default: 1, label: "Single Step" },
+				{ name: "stepType", type: "enum", default: "QAbstractSpinBox::DefaultStepType", label: "Step Type", options: QAbstractSpinBox.enumStepType },
 				{ name: "displayIntegerBase", type: "number", default: 10, label: "Display Integer Base" },
 			];
 		}
@@ -1701,10 +1724,11 @@
 				{ name: "prefix", type: "string", default: "", label: "Prefix" },
 				{ name: "suffix", type: "string", default: "", label: "Suffix" },
 				{ name: "decimals", type: "number", default: 2, label: "Decimals" },
-				{ name: "minimum", type: "number", default: 0, label: "Minimum" },
-				{ name: "maximum", type: "number", default: 99.99, label: "Maximum" },
-				{ name: "value", type: "number", default: 0, label: "Value" },
-				{ name: "singleStep", type: "number", default: 1, label: "Single Step" },
+				{ name: "minimum", type: "double", default: 0, label: "Minimum" },
+				{ name: "maximum", type: "double", default: 99.99, label: "Maximum" },
+				{ name: "value", type: "double", default: 0, label: "Value" },
+				{ name: "singleStep", type: "double", default: 1, label: "Single Step" },
+				{ name: "stepType", type: "enum", default: "QAbstractSpinBox::DefaultStepType", label: "Step Type", options: QAbstractSpinBox.enumStepType },
 			];
 		}
 
@@ -1726,9 +1750,9 @@
 				this.prefix === "" ? null : createXMLBasicProperty(doc, "prefix", "string", this.prefix),
 				this.suffix === "" ? null : createXMLBasicProperty(doc, "suffix", "string", this.suffix),
 				this.decimals === 2 ? null : createXMLBasicProperty(doc, "decimals", "number", this.decimals),
-				this.minimum === 0 ? null : createXMLBasicProperty(doc, "minimum", "number", this.minimum),
-				this.maximum === 99 ? null : createXMLBasicProperty(doc, "maximum", "number", this.maximum),
-				this.value === 0 ? null : createXMLBasicProperty(doc, "value", "number", this.value),
+				this.minimum === 0 ? null : createXMLBasicProperty(doc, "minimum", "double", this.minimum),
+				this.maximum === 99 ? null : createXMLBasicProperty(doc, "maximum", "double", this.maximum),
+				this.value === 0 ? null : createXMLBasicProperty(doc, "value", "double", this.value),
 			];
 		}
 	}
