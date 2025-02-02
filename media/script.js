@@ -1677,6 +1677,62 @@
 		}
 	}
 
+	class QDoubleSpinBox extends QAbstractSpinBox {
+		constructor() {
+			super();
+			this.element.classList.add("QSpinBox");
+
+			this.prefix = "";
+			this.suffix = "";
+			this.decimals = 2;
+			this.minimum = 0;
+			this.maximum = 99.99;
+			this.value = 0;
+
+			this.addBasicPropGetterSetters(["prefix", "suffix", "decimals", "minimum", "maximum", "value"], this.updateDisplay);
+
+			this.updateDisplay();
+		}
+
+		getDefaultProps() {
+			return [
+				...super.getDefaultProps(),
+				{ separator: "QDoubleSpinBox" },
+				{ name: "prefix", type: "string", default: "", label: "Prefix" },
+				{ name: "suffix", type: "string", default: "", label: "Suffix" },
+				{ name: "decimals", type: "number", default: 2, label: "Decimals" },
+				{ name: "minimum", type: "number", default: 0, label: "Minimum" },
+				{ name: "maximum", type: "number", default: 99.99, label: "Maximum" },
+				{ name: "value", type: "number", default: 0, label: "Value" },
+				{ name: "singleStep", type: "number", default: 1, label: "Single Step" },
+			];
+		}
+
+		getDisplayValue() {
+			return this.prefix + this.value.toFixed(this.decimals) + this.suffix;
+		}
+
+		canGoDown() {
+			return this.value > this.minimum;
+		}
+		canGoUp() {
+			return this.value < this.maximum;
+		}
+
+		exportProperties(doc) {
+			const props = super.exportProperties(doc);
+			return [
+				...props,
+				this.prefix === "" ? null : createXMLBasicProperty(doc, "prefix", "string", this.prefix),
+				this.suffix === "" ? null : createXMLBasicProperty(doc, "suffix", "string", this.suffix),
+				this.decimals === 2 ? null : createXMLBasicProperty(doc, "decimals", "number", this.decimals),
+				this.minimum === 0 ? null : createXMLBasicProperty(doc, "minimum", "number", this.minimum),
+				this.maximum === 99 ? null : createXMLBasicProperty(doc, "maximum", "number", this.maximum),
+				this.value === 0 ? null : createXMLBasicProperty(doc, "value", "number", this.value),
+			];
+		}
+	}
+
 	const elements = {
 		QLayout,
 		QBoxLayout,
@@ -1691,6 +1747,7 @@
 		QLineEdit,
 		QAbstractSpinBox,
 		QSpinBox,
+		QDoubleSpinBox,
 	};
 
 	function addLayoutFromElement(/** @type {Element} */ raw, /** @type {QWidget} */ widget) {
@@ -1912,6 +1969,7 @@
 		addToWidgetBox(QPushButton, "Push Button", "widgets/pushbutton.png", "pushButton", 80, 24, {text: "PushButton"});
 		addToWidgetBox(QLineEdit, "Line Edit", "widgets/lineedit.png", "lineEdit", 113, 20);
 		addToWidgetBox(QSpinBox, "Spin Box", "widgets/spinbox.png", "spinBox", 42, 22);
+		addToWidgetBox(QDoubleSpinBox, "Double Spin Box", "widgets/doublespinbox.png", "doubleSpinBox", 62, 22);
 		addToWidgetBox(QProgressBar, "Progress Bar", "widgets/progress.png", "progressBar", 118, 23, {value: 24});
 	}
 
